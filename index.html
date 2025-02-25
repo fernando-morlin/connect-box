@@ -596,23 +596,48 @@
     }
 
     // Settings handling
-    let apiKey = '';
-    let selectedModel = 'gemini-2.0-pro-exp-02-05';
+    let apiKey = localStorage.getItem('gemini-api-key') || '';
+    let selectedModel = localStorage.getItem('gemini-model') || 'gemini-2.0-pro-exp-02-05';
 
     const settingsBtn = document.querySelector('.settings');
     const settingsModal = document.getElementById('settings-modal');
     const saveSettingsBtn = document.getElementById('save-settings');
 
+    // Load saved settings when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedApiKey = localStorage.getItem('gemini-api-key');
+        const savedModel = localStorage.getItem('gemini-model');
+        
+        if (savedApiKey) {
+            document.getElementById('api-key').value = savedApiKey;
+            apiKey = savedApiKey;
+        }
+        
+        if (savedModel) {
+            document.getElementById('model-select').value = savedModel;
+            selectedModel = savedModel;
+        }
+    });
+
     settingsBtn.addEventListener('click', () => {
+        // Ensure form shows current values
+        document.getElementById('api-key').value = apiKey;
+        document.getElementById('model-select').value = selectedModel;
         settingsModal.style.display = 'block';
     });
 
     saveSettingsBtn.addEventListener('click', () => {
         apiKey = document.getElementById('api-key').value;
         selectedModel = document.getElementById('model-select').value;
+        
+        // Save to localStorage
+        localStorage.setItem('gemini-api-key', apiKey);
+        localStorage.setItem('gemini-model', selectedModel);
+        
         settingsModal.style.display = 'none';
     });
 
+    // Close the modal when clicking outside of it
     window.addEventListener('click', (event) => {
         if (event.target === settingsModal) {
             settingsModal.style.display = 'none';
@@ -671,6 +696,12 @@
         executionResultsDiv.innerHTML = ''; // Clear previous results
         executionResultsDiv.classList.add('visible');
         let currentBlockId = null;
+        
+        // Track which blocks have been processed to avoid duplicate updates
+        const updatedBlocks = new Set();
+        
+        // Store input data for blocks separately instead of overwriting textarea content
+        const blockInputs = new Map();
 
         // Find start blocks (blocks with no incoming connections)
         const startBlocks = connections.filter(el => !connections.some(innEl => innEl.target === el.source)).map(el => el.source);
@@ -683,18 +714,16 @@
             }
         });
 
-
         if (startBlocks.length === 0 && connections.length > 0) {
             executionResultsDiv.innerHTML += "<p>Error: The workflow has a cycle or is not properly connected.</p>";
             return;
         }
 
-
         for (const startBlock of startBlocks) {
             currentBlockId = startBlock;
             let output = '';
-              while(currentBlockId){
-
+            
+            while(currentBlockId) {
                 const block = document.getElementById(currentBlockId);
                 if (!block) {
                     executionResultsDiv.innerHTML += `<p>Error: Block with ID ${currentBlockId} not found.</p>`;
@@ -703,26 +732,48 @@
 
                 const type = block.classList.contains('text-block') ? 'Text' : 'Instruction';
                 const content = block.querySelector('textarea').value;
+                const input = blockInputs.get(currentBlockId) || '';
 
-                if(type === "Text"){
-                    output = content;
+                if(type === "Text") {
+                    // For text blocks after an instruction, we might want to update their content
+                    // if they have no content of their own or they have received input
+                    if ((input && content.trim() === '') || updatedBlocks.has(currentBlockId)) {
+                        block.querySelector('textarea').value = input;
+                        output = input; // Set output to the input that was passed to this block
+                    } else {
+                        output = content; // Use the original content
+                    }
                     executionResultsDiv.innerHTML += `<p><strong>Text Block (${block.id}):</strong> ${output}</p>`;
                 } else {
-                    try{
-                        // Very basic "instruction" execution (replace with a safe eval or a proper interpreter)
-                        // WARNING: eval is generally unsafe. Consider a safer alternative in a production environment.
-                        const result = await executeInstruction(content, output);
-                        output = result; // Set the output for the next block
+                    try {
+                        // Use the instruction from textarea and input data from previous block
+                        const result = await executeInstruction(content, input);
+                        output = result;
                         executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Result: ${result}</p>`;
-                      } catch (error) {
+                    } catch (error) {
                         executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Error: ${error.message}</p>`;
                         break; // Stop on error
-                      }
+                    }
                 }
+                
+                // Find the next block in the workflow
                 let nextConnection = connections.find(conn => conn.source === currentBlockId);
                 currentBlockId = nextConnection ? nextConnection.target : null;
-              }
-          }
+                
+                // Store the output as input for the next block
+                if (currentBlockId && output) {
+                    blockInputs.set(currentBlockId, output);
+                    
+                    // Mark the next block for update if it's a text block
+                    const nextBlock = document.getElementById(currentBlockId);
+                    if (nextBlock && nextBlock.classList.contains('text-block')) {
+                        updatedBlocks.add(currentBlockId);
+                        // Update the next text block's content with the output
+                        nextBlock.querySelector('textarea').value = output;
+                    }
+                }
+            }
+        }
       });
 
 
