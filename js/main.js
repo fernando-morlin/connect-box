@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const workflowArea = document.getElementById('workflow-area');
     const addTextBtn = document.querySelector('.add-text');
     const addInstructionBtn = document.querySelector('.add-instruction');
+    const addImageBtn = document.querySelector('.add-image');
     const executeBtn = document.querySelector('.execute');
     const resultsToggle = document.getElementById('results-toggle');
     const executionResults = document.getElementById('execution-results');
@@ -23,6 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addInstructionBtn.addEventListener('click', () => {
         createBlock('instruction', 300, 50, workflowArea);
+    });
+
+    addImageBtn.addEventListener('click', () => {
+        console.log('Image button clicked'); // Add this line
+        createBlock('image', 50, 50, workflowArea);
     });
 
     executeBtn.addEventListener('click', () => {

@@ -8,7 +8,7 @@ let blockCount = 0;
 
 function createBlock(type, x, y, workflowArea) {
     try {
-        if (!['text', 'instruction'].includes(type)) {
+        if (!['text', 'instruction', 'image'].includes(type)) {
             throw new Error('Invalid block type');
         }
 
@@ -16,61 +16,90 @@ function createBlock(type, x, y, workflowArea) {
         const block = createElement('div', `block ${type}-block`);
         block.id = `${type}-${blockCount}`;
 
-        // Ensure blocks are created within viewport
-        const maxX = workflowArea.clientWidth - 200;  // 200 is min block width
-        const maxY = workflowArea.clientHeight - 100; // 100 is min block height
+        // Position block
+        const maxX = workflowArea.clientWidth - 200;
+        const maxY = workflowArea.clientHeight - 100;
         block.style.left = `${Math.min(Math.max(0, x), maxX)}px`;
         block.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
 
         const label = createElement('div', 'block-label');
-        label.textContent = type === 'text' ? 'Text' : 'Instruction';
+        label.textContent = type.charAt(0).toUpperCase() + type.slice(1);
         block.appendChild(label);
 
+        // Create block content based on type
+        if (type === 'image') {
+            const imageInput = createElement('input', '', { 
+                type: 'file', 
+                accept: 'image/*',
+                id: `file-${blockCount}`
+            });
+            const imageLabel = createElement('label', '', {
+                for: `file-${blockCount}`
+            });
+            imageLabel.textContent = 'Browse';
+            const imagePreview = createElement('img', 'image-preview');
+            imagePreview.style.display = 'none';
+            imagePreview.style.maxWidth = '100%';
+            
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        imagePreview.src = event.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
 
-        const textarea = createElement('textarea', '', { placeholder: type === 'text' ? 'Enter text...' : 'Enter instructions...' });
-        block.appendChild(textarea);
+            block.appendChild(imageInput);
+            block.appendChild(imageLabel);
+            block.appendChild(imagePreview);
+        } else {
+            const textarea = createElement('textarea', '', { 
+                placeholder: type === 'text' ? 'Enter text...' : 'Enter instructions...' 
+            });
+            block.appendChild(textarea);
+        }
 
-        // Add both input and output handles
+        // Add handles
         const leftHandle = createElement('div', 'handle left');
-        block.appendChild(leftHandle);
         const rightHandle = createElement('div', 'handle right');
+        block.appendChild(leftHandle);
         block.appendChild(rightHandle);
 
-
+        // Add delete button
         const deleteButton = createElement('button', 'delete-button');
         deleteButton.textContent = 'x';
         deleteButton.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent block dragging
+            event.stopPropagation();
             deleteBlock(block.id, workflowArea);
         });
-
         block.appendChild(deleteButton);
 
         // Add resize handle
         const resizeHandle = createElement('div', 'resize-handle');
         block.appendChild(resizeHandle);
 
-        // Add play button to instruction blocks only
+        // Add play button for instruction blocks
         if (type === 'instruction') {
             const playButton = createElement('button', 'play-button');
             playButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
-            playButton.title = "Run from this block";
             playButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Prevent block dragging
+                event.stopPropagation();
                 executeFromBlock(block.id);
             });
             block.appendChild(playButton);
         }
+
         const connectionStatus = createElement('div', 'connection-status');
         block.appendChild(connectionStatus);
 
-
         label.addEventListener('mousedown', startDrag);
         block.addEventListener('mousedown', startDrag);
-        
-        // Add resize functionality
         resizeHandle.addEventListener('mousedown', startResize);
-        
+
         workflowArea.appendChild(block);
         return block;
     } catch (error) {
