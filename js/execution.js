@@ -57,7 +57,7 @@ async function executeWorkflow(workflowArea) {
         const incomingCount = incomingConnectionCount.get(currentBlockId) || 0;
         const processedCount = processedInputsCount.get(currentBlockId) || 0;
         
-        // If this block has multiple incoming connections and we haven't processed all inputs yet
+        // If this block has incoming connections and we haven't processed all inputs yet
         if (incomingCount > 0 && processedCount < incomingCount) {
             // Skip for now, will process later when all inputs are ready
             continue;
@@ -112,25 +112,19 @@ async function executeWorkflow(workflowArea) {
                 blockInputs.set(targetId, []);
             }
             
-            // If we're storing multiple inputs for a block, use an array
-            if (incomingConnectionCount.get(targetId) > 1) {
-                const inputs = blockInputs.get(targetId);
-                if (Array.isArray(inputs)) {
-                    inputs.push(output);
-                } else {
-                    blockInputs.set(targetId, [inputs, output]);
-                }
-                
-                // Increment the processed input count for this target
-                processedInputsCount.set(targetId, (processedInputsCount.get(targetId) || 0) + 1);
-                
-                // If we've processed all inputs for this target, add it to the queue
-                if (processedInputsCount.get(targetId) >= incomingConnectionCount.get(targetId)) {
-                    blocksToProcess.push(targetId);
-                }
+            // Store inputs consistently as arrays for all blocks
+            const inputs = blockInputs.get(targetId);
+            if (Array.isArray(inputs)) {
+                inputs.push(output);
             } else {
-                // Single input, just store the output
-                blockInputs.set(targetId, output);
+                blockInputs.set(targetId, [output]);
+            }
+            
+            // Increment the processed input count for this target
+            processedInputsCount.set(targetId, (processedInputsCount.get(targetId) || 0) + 1);
+            
+            // If we've processed all inputs for this target, add it to the queue
+            if (processedInputsCount.get(targetId) >= incomingConnectionCount.get(targetId)) {
                 blocksToProcess.push(targetId);
             }
             
