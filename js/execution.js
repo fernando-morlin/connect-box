@@ -152,41 +152,43 @@ async function executeFromBlock(startBlockId) {
     const executionResultsDiv = document.getElementById('execution-results');
     executionResultsDiv.innerHTML = ''; // Clear
     executionResultsDiv.classList.add('visible');
-    executionResultsDiv.innerHTML += `<p><strong>Executing from block:</strong> ${startBlockId}</p>`;
-
-    const updatedBlocks = new Set();
+    
+    const processedBlocks = new Set();
     const blockInputs = new Map();
 
+    // First, collect inputs from previous blocks without executing them
     const incomingConnections = window.connections.filter(conn => conn.target === startBlockId);
-    let input = '';
-
-    if (incomingConnections.length > 0) {
-        executionResultsDiv.innerHTML += `<p><em>Note: Starting execution from this point.  Input from previous blocks will not be used.</em></p>`;
-    }
-
-    let currentBlockId = startBlockId;
-    let output = '';
-
-
-    const startBlock = document.getElementById(currentBlockId);
-    if (!startBlock) {
-        executionResultsDiv.innerHTML += `<p>Error: Starting block with ID ${currentBlockId} not found.</p>`;
-        return;
-    }
-
-    while (currentBlockId) {
-        const block = document.getElementById(currentBlockId);
-        if (!block) {
-            executionResultsDiv.innerHTML += `<p>Error: Block with ID ${currentBlockId} not found.</p>`;
-            break;
+    
+    // Gather inputs from all incoming connections
+    let inputs = [];
+    for (const conn of incomingConnections) {
+        const sourceBlock = document.getElementById(conn.source);
+        if (sourceBlock) {
+            inputs.push(sourceBlock.querySelector('textarea').value);
         }
+    }
+    const input = inputs.join('\n\n');
+
+    // Now execute from the start block forward
+    let blocksToProcess = [startBlockId];
+    
+    while (blocksToProcess.length > 0) {
+        const currentBlockId = blocksToProcess.shift();
+        
+        if (processedBlocks.has(currentBlockId)) continue;
+        
+        const block = document.getElementById(currentBlockId);
+        if (!block) continue;
 
         const type = block.classList.contains('text-block') ? 'Text' : 'Instruction';
         const content = block.querySelector('textarea').value;
-        const blockInput = blockInputs.get(currentBlockId) || input;
-
+        
+        // Use collected input for start block, otherwise use previous block's output
+        const blockInput = currentBlockId === startBlockId ? input : blockInputs.get(currentBlockId);
+        
+        let output = '';
         if (type === "Text") {
-            if ((blockInput && content.trim() === '') || updatedBlocks.has(currentBlockId)) {
+            if (blockInput && content.trim() === '') {
                 block.querySelector('textarea').value = blockInput;
                 output = blockInput;
             } else {
@@ -198,23 +200,28 @@ async function executeFromBlock(startBlockId) {
                 const result = await executeInstruction(content, blockInput);
                 output = result;
                 executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
+                
+                // Add this section to update outgoing text blocks
+                const outgoingConnections = window.connections.filter(conn => conn.source === currentBlockId);
+                for (const connection of outgoingConnections) {
+                    const targetBlock = document.getElementById(connection.target);
+                    if (targetBlock && targetBlock.classList.contains('text-block')) {
+                        targetBlock.querySelector('textarea').value = result;
+                    }
+                }
             } catch (error) {
                 executionResultsDiv.innerHTML += `<p><strong>Instruction (${block.id}):</strong> Error: ${error.message}</p>`;
                 break;
             }
         }
 
-        updatedBlocks.add(currentBlockId);
-        let nextConnection = window.connections.find(conn => conn.source === currentBlockId);
-        currentBlockId = nextConnection ? nextConnection.target : null;
+        processedBlocks.add(currentBlockId);
 
-        if (currentBlockId && output) {
-            blockInputs.set(currentBlockId, output);
-
-            const nextBlock = document.getElementById(currentBlockId);
-            if (nextBlock && nextBlock.classList.contains('text-block')) {
-                nextBlock.querySelector('textarea').value = output;
-            }
+        // Find next blocks to process
+        const outgoingConnections = window.connections.filter(conn => conn.source === currentBlockId);
+        for (const conn of outgoingConnections) {
+            blockInputs.set(conn.target, output);
+            blocksToProcess.push(conn.target);
         }
     }
 }
