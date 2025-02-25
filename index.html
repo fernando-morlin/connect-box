@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextWeaver Connect</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 64px; /* Fixed width for simplicity */
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #sidebar button {
+            background-color: transparent;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex; /* Use flexbox for icon centering */
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sidebar button:hover {
+            background-color: #e2e6ea;
+        }
+
+        #sidebar button.add-text { color: #495057; }
+        #sidebar button.add-instruction { color: #6610f2; }
+        #sidebar button.settings { color: #495057; }
+        #sidebar button.execute { color: #28a745; }
+
+        #workflow-area {
+            flex: 1;
+            padding: 20px;
+            background-color: #f0f2f5;
+            position: relative; /* Important for absolute positioning of blocks */
+            overflow: auto; /* Add scrollbars if content overflows */
+        }
+
+        .block {
+            position: absolute;
+            border: 1px solid #ced4da;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 200px;
+            z-index: 1; /* Ensure blocks are above lines */
+            user-select: none; /* Prevent text selection on drag */
+        }
+
+        .block textarea {
+            width: 100%;
+            resize: vertical; /* Allow vertical resizing */
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 5px;
+            margin-bottom: 5px;
+            font-family: inherit;
+            font-size: inherit;
+            box-sizing: border-box; /* Include padding and border in width */
+        }
+        .block-label {
+            font-size: 0.9em;
+            margin-bottom: 0.3em;
+            color: #343a40;
+        }
+
+        .handle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            z-index: 2; /* Handles above blocks */
+            border: 1px solid transparent; /* For consistent hover effect */
+        }
+
+        .handle.left {
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #6610f2; /* Purple for input */
+        }
+        .handle.right {
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #28a745; /* Green for output */
+        }
+
+        .handle:hover {
+            border-color: rgba(0,0,0,0.2); /* Subtle hover effect */
+        }
+
+        /* Line drawing styles */
+        .connection-line {
+            position: absolute;
+            pointer-events: none; /*  Make lines non-interactive */
+            z-index: 0; /*  Place lines behind blocks */
+        }
+        .connection-line line {
+            stroke: #999; /*  Neutral line color */
+            stroke-width: 2;
+        }
+
+
+        /* SVG Icon Styles (using inline SVG for simplicity) */
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .delete-button {
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          background-color: #f44336;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 12px;
+          z-index:3;
+        }
+
+        .delete-button:hover {
+          background-color: #d32f2f;
+        }
+
+        #execution-results {
+          margin-top: 20px;
+          padding: 10px;
+          border: 1px solid #ccc;
+          background-color: #f9f9f9;
+          display: none; /* Initially hidden */
+        }
+        #execution-results.visible{
+          display: block;
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 5px; /* Adjust positioning as needed */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            display: none; /* Initially hidden */
+        }
+        .connection-status.visible{
+            display: block;
+        }
+
+        /* Add these styles to the existing CSS */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            #sidebar {
+                width: 100%;
+                height: 64px;
+                flex-direction: row;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            #workflow-area {
+                height: calc(100vh - 64px);
+            }
+        }
+
+        .block {
+            max-width: 90vw;
+            min-width: 150px;
+        }
+
+        textarea {
+            min-height: 60px;
+            max-height: 200px;
+        }
+
+        /* Add this to your existing style section */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <button class="add-text" title="Add Text Block">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><line x1="9" x2="15" y1="9" y2="9"></line><line x1="9" x2="15" y1="15" y2="15"></line></svg>
+        </button>
+        <button class="add-instruction" title="Add Instruction Block">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><line x1="9" x2="15" y1="9" y2="9"></line><line x1="9" x2="15" y1="15" y2="15"></line></svg>
+        </button>
+        <button class="settings" title="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <button class="execute" title="Execute">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </button>
+    </div>
+
+    <div id="workflow-area">
+        <div id="execution-results"></div>
+    </div>
+
+    <!-- Add this right after the workflow-area div -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            <div class="form-group">
+                <label for="api-key">Gemini API Key:</label>
+                <input type="password" id="api-key" placeholder="Enter your API key">
+            </div>
+            <div class="form-group">
+                <label for="model-select">Model:</label>
+                <select id="model-select">
+                    <option value="gemini-2.0-pro-exp-02-05">gemini-2.0-pro-exp-02-05</option>
+                    <option value="gemini-2.0-flash-thinking-exp-01-21">gemini-2.0-flash-thinking-exp-01-21</option>
+                    <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</option>
+                </select>
+            </div>
+            <button id="save-settings">Save</button>
+        </div>
+    </div>
+
+    <script>
+      const workflowArea = document.getElementById('workflow-area');
+      const addTextBtn = document.querySelector('.add-text');
+      const addInstructionBtn = document.querySelector('.add-instruction');
+      const executeBtn = document.querySelector('.execute');
+      const executionResultsDiv = document.getElementById('execution-results');
+
+
+      let blockCount = 0;
+      let isDragging = false;
+      let isConnecting = false;
+      let dragTarget = null;
+      let connectStart = null;
+      let connections = [];
+      let temporaryLine = null; // To store the temporary line during connection
+
+
+        // Utility function for creating elements
+        function createElement(tag, className, attributes = {}) {
+            const element = document.createElement(tag);
+            if (className) element.className = className;
+            for (const key in attributes) {
+                element.setAttribute(key, attributes[key]);
+            }
+            return element;
+        }
+
+      function createBlock(type, x, y) {
+          try {
+              if (!['text', 'instruction'].includes(type)) {
+                  throw new Error('Invalid block type');
+              }
+
+              blockCount++;
+              const block = createElement('div', `block ${type}-block`);
+              block.id = `${type}-${blockCount}`;
+              
+              // Ensure blocks are created within viewport
+              const maxX = workflowArea.clientWidth - 200;  // 200 is min block width
+              const maxY = workflowArea.clientHeight - 100; // 100 is min block height
+              block.style.left = `${Math.min(Math.max(0, x), maxX)}px`;
+              block.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
+
+              const label = createElement('div', 'block-label');
+              label.textContent = type === 'text' ? 'Text Block' : 'Instruction Block';
+              block.appendChild(label);
+              
+
+              const textarea = createElement('textarea', '', {placeholder: type === 'text' ? 'Enter text...' : 'Enter instructions...'});
+              block.appendChild(textarea);
+
+                // Add both input and output handles
+              const leftHandle = createElement('div', 'handle left');
+              block.appendChild(leftHandle);
+              const rightHandle = createElement('div', 'handle right');
+              block.appendChild(rightHandle);
+
+
+              const deleteButton = createElement('button', 'delete-button');
+              deleteButton.textContent = 'x';
+              deleteButton.addEventListener('click', (event) => {
+                  event.stopPropagation(); // Prevent block dragging when clicking delete
+                    deleteBlock(block.id);
+              });
+
+              block.appendChild(deleteButton);
+
+              const connectionStatus = createElement('div', 'connection-status');
+              block.appendChild(connectionStatus);
+
+              block.addEventListener('mousedown', startDrag);
+              workflowArea.appendChild(block);
+              return block;
+          } catch (error) {
+              console.error('Error creating block:', error);
+              return null;
+          }
+      }
+
+    function deleteBlock(blockId) {
+      // Remove the block
+      const block = document.getElementById(blockId);
+      if (block) {
+        block.remove();
+      }
+
+      // Remove any connections involving this block
+      connections = connections.filter(conn => conn.source !== blockId && conn.target !== blockId);
+
+      // Redraw the connections
+      updateConnections();
+    }
+
+    function updateConnections() {
+        // Remove existing lines
+        document.querySelectorAll('.connection-line').forEach(line => line.remove());
+
+        connections.forEach(conn => {
+            const sourceBlock = document.getElementById(conn.source);
+            const targetBlock = document.getElementById(conn.target);
+
+            if (sourceBlock && targetBlock) {
+                const sourceHandle = sourceBlock.querySelector('.handle.right');
+                const targetHandle = targetBlock.querySelector('.handle.left');
+
+                if (!sourceHandle || !targetHandle) return;
+
+                // Get positions relative to workflow area
+                const workflowRect = workflowArea.getBoundingClientRect();
+                const sourceRect = sourceHandle.getBoundingClientRect();
+                const targetRect = targetHandle.getBoundingClientRect();
+
+                // Calculate positions
+                const x1 = sourceRect.left + sourceRect.width / 2 - workflowRect.left;
+                const y1 = sourceRect.top + sourceRect.height / 2 - workflowRect.top;
+                const x2 = targetRect.left + targetRect.width / 2 - workflowRect.left;
+                const y2 = targetRect.top + targetRect.height / 2 - workflowRect.top;
+
+                // Create SVG container
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("class", "connection-line");
+                svg.style.position = "absolute";
+                svg.style.left = Math.min(x1, x2) + "px";
+                svg.style.top = Math.min(y1, y2) + "px";
+                svg.style.width = Math.abs(x2 - x1) + "px";
+                svg.style.height = Math.abs(y2 - y1) + "px";
+
+                // Create line element
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", x1 < x2 ? 0 : Math.abs(x2 - x1));
+                line.setAttribute("y1", y1 < y2 ? 0 : Math.abs(y2 - y1));
+                line.setAttribute("x2", x1 < x2 ? Math.abs(x2 - x1) : 0);
+                line.setAttribute("y2", y1 < y2 ? Math.abs(y2 - y1) : 0);
+                line.setAttribute("stroke", "#999");
+                line.setAttribute("stroke-width", "2");
+
+                svg.appendChild(line);
+                workflowArea.appendChild(svg);
+            }
+        });
+    }
+
+    function startDrag(event) {
+        isDragging = true;
+        dragTarget = event.target.closest('.block'); // Find the closest parent with class 'block'
+
+
+        if (event.target.classList.contains('handle')) {
+            isConnecting = true;
+            connectStart = {
+                blockId: dragTarget.id,
+                handleType: event.target.classList.contains('left') ? 'left' : 'right'
+            };
+              // Create temporary line
+            const startHandle = event.target.getBoundingClientRect();
+            const workflowAreaRect = workflowArea.getBoundingClientRect();
+            const x1 = startHandle.left + startHandle.width / 2 - workflowAreaRect.left;
+            const y1 = startHandle.top + startHandle.height / 2 - workflowAreaRect.top;
+
+
+            temporaryLine = createElement('svg', 'connection-line', {
+                width: 0,
+                height: 0,
+                style: `left: ${x1}px; top: ${y1}px;`
+            });
+            const path = createElement('line', null, {
+                x1: 0,
+                y1: 0,
+                x2: 0, // Initialize x2 and y2
+                y2: 0, // Initialize x2 and y2
+                stroke: '#999',
+                'stroke-width': 2
+            });
+            temporaryLine.appendChild(path);
+            workflowArea.appendChild(temporaryLine);
+
+
+            event.preventDefault(); // Prevent text selection during drag
+        } else {
+            // Calculate offset within the block
+            const rect = dragTarget.getBoundingClientRect();
+            dragTarget.offsetX = event.clientX - rect.left;
+            dragTarget.offsetY = event.clientY - rect.top;
+        }
+    }
+
+    function doDrag(event) {
+        if (!isDragging) return;
+
+        if (isConnecting && temporaryLine) {
+            // Update temporary line
+            const startHandle = document.getElementById(connectStart.blockId).querySelector(`.handle.${connectStart.handleType}`).getBoundingClientRect();
+            const workflowAreaRect = workflowArea.getBoundingClientRect();
+            const x1 = startHandle.left + startHandle.width / 2 - workflowAreaRect.left;
+            const y1 = startHandle.top + startHandle.height / 2 - workflowAreaRect.top;
+
+            const x2 = event.clientX - workflowAreaRect.left;
+            const y2 = event.clientY - workflowAreaRect.top;
+
+            // Calculate the top-left corner of the SVG element
+              const svgLeft = Math.min(x1, x2);
+              const svgTop = Math.min(y1, y2);
+
+              // Update SVG element dimensions and position
+              temporaryLine.style.left = `${svgLeft}px`;
+              temporaryLine.style.top = `${svgTop}px`;
+              temporaryLine.setAttribute('width', Math.abs(x2 - x1));
+              temporaryLine.setAttribute('height', Math.abs(y2 - y1));
+
+
+            // Update line coordinates
+            const path = temporaryLine.querySelector('line');
+            path.setAttribute('x1', x1 < x2 ? 0 : Math.abs(x2-x1));
+            path.setAttribute('y1', y1 < y2 ? 0 : Math.abs(y2 - y1));
+            path.setAttribute('x2', x1 < x2 ? Math.abs(x2 - x1) : 0);
+            path.setAttribute('y2', y1 < y2 ? Math.abs(y2 - y1) : 0);
+
+
+        } else {
+            // Block dragging
+            if (dragTarget) {
+                const x = event.clientX - workflowArea.offsetLeft - dragTarget.offsetX;
+                const y = event.clientY - workflowArea.offsetTop - dragTarget.offsetY;
+                dragTarget.style.left = `${x}px`;
+                dragTarget.style.top = `${y}px`;
+                updateConnections(); // Update connections when dragging
+            }
+
+        }
+    }
+
+    function endDrag(event) {
+        if (!isDragging) return;
+
+        if (temporaryLine) {
+            temporaryLine.remove();
+            temporaryLine = null;
+        }
+
+        if (isConnecting) {
+            const targetElement = document.elementFromPoint(event.clientX, event.clientY);
+            const targetBlock = targetElement?.closest('.block');
+
+            if (targetBlock && targetBlock.id !== connectStart.blockId) {
+                // Check if connecting to the opposite handle type.
+                const targetHandle = targetElement.closest('.handle');
+                const targetHandleType = targetHandle?.classList.contains('left') ? 'left' : (targetHandle?.classList.contains('right') ? 'right' : null);
+
+                // Allow connections from right to left, and left to right
+                if ((connectStart.handleType === 'right' && targetHandleType === 'left') ||
+                    (connectStart.handleType === 'left' && targetHandleType === 'right')) {
+
+                    // Check for existing connection in either direction.
+                    const existingConnection = connections.find(c =>
+                        (c.source === connectStart.blockId && c.target === targetBlock.id) ||
+                        (c.source === targetBlock.id && c.target === connectStart.blockId)
+                    );
+
+                    if (!existingConnection) {
+                        // Determine direction of the connection.
+                        const source = connectStart.handleType === 'right' ? connectStart.blockId : targetBlock.id;
+                        const target = connectStart.handleType === 'right' ? targetBlock.id : connectStart.blockId;
+
+                        if (validateConnection(source, target)) {
+                            connections.push({ source, target }); // Corrected connection push
+                            updateConnections(); // Redraw lines after connecting
+                        } else {
+                            const statusDisplay = targetBlock.querySelector('.connection-status');
+                            statusDisplay.textContent = 'Cyclic connection detected!';
+                            statusDisplay.classList.add('visible');
+                            setTimeout(() => statusDisplay.classList.remove('visible'), 2000);
+                        }
+                    } else {
+                        const statusDisplay = targetBlock.querySelector('.connection-status');
+                        statusDisplay.textContent = 'Connection already exists!';
+                        statusDisplay.classList.add('visible');
+                        setTimeout(() => statusDisplay.classList.remove('visible'), 2000);
+                    }
+                }
+            }
+        }
+
+        isDragging = false;
+        isConnecting = false;
+        dragTarget = null;
+        connectStart = null;
+    }
+
+    function validateConnection(sourceId, targetId) {
+        // Check for cyclic connections
+        const visited = new Set();
+        
+        function hasCycle(currentId) {
+            if (visited.has(currentId)) return true;
+            visited.add(currentId);
+            
+            const nextConnections = connections.filter(conn => conn.source === currentId);
+            for (const conn of nextConnections) {
+                if (hasCycle(conn.target)) return true;
+            }
+            
+            visited.delete(currentId);
+            return false;
+        }
+
+        // Temporarily add the new connection
+        connections.push({ source: sourceId, target: targetId });
+        const hasCycles = hasCycle(sourceId);
+        connections.pop(); // Remove the temporary connection
+
+        return !hasCycles;
+    }
+
+    // Settings handling
+    let apiKey = '';
+    let selectedModel = 'gemini-2.0-pro-exp-02-05';
+
+    const settingsBtn = document.querySelector('.settings');
+    const settingsModal = document.getElementById('settings-modal');
+    const saveSettingsBtn = document.getElementById('save-settings');
+
+    settingsBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'block';
+    });
+
+    saveSettingsBtn.addEventListener('click', () => {
+        apiKey = document.getElementById('api-key').value;
+        selectedModel = document.getElementById('model-select').value;
+        settingsModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === settingsModal) {
+            settingsModal.style.display = 'none';
+        }
+    });
+
+    // Function to call Gemini API
+    async function callGeminiAPI(prompt) {
+        if (!apiKey) {
+            throw new Error('API key not configured. Please set it in settings.');
+        }
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API call failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+    }
+
+    // Modify the existing executeInstruction function
+    async function executeInstruction(content, input) {
+        try {
+            // If there's input, combine it with the instruction
+            const prompt = input ? `${content}\nInput: ${input}` : content;
+            const result = await callGeminiAPI(prompt);
+            return result;
+        } catch (error) {
+            throw new Error(`LLM execution failed: ${error.message}`);
+        }
+    }
+
+        addTextBtn.addEventListener('click', () => {
+            createBlock('text', 50, 50);
+        });
+
+        addInstructionBtn.addEventListener('click', () => {
+            createBlock('instruction', 300, 50);
+        });
+
+      executeBtn.addEventListener('click', async () => {
+        executionResultsDiv.innerHTML = ''; // Clear previous results
+        executionResultsDiv.classList.add('visible');
+        let currentBlockId = null;
+
+        // Find start blocks (blocks with no incoming connections)
+        const startBlocks = connections.filter(el => !connections.some(innEl => innEl.target === el.source)).map(el => el.source);
+
+        // Add blocks that have no connections at all
+        const allBlocks = Array.from(document.querySelectorAll('.block')).map(block => block.id);
+        allBlocks.forEach(blockId => {
+            if (!connections.some(conn => conn.source === blockId || conn.target === blockId)) {
+                startBlocks.push(blockId);
+            }
+        });
+
+
+        if (startBlocks.length === 0 && connections.length > 0) {
+            executionResultsDiv.innerHTML += "<p>Error: The workflow has a cycle or is not properly connected.</p>";
+            return;
+        }
+
+
+        for (const startBlock of startBlocks) {
+            currentBlockId = startBlock;
+            let output = '';
+              while(currentBlockId){
+
+                const block = document.getElementById(currentBlockId);
+                if (!block) {
+                    executionResultsDiv.innerHTML += `<p>Error: Block with ID ${currentBlockId} not found.</p>`;
+                    break; // Stop processing if a block is missing
+                }
+
+                const type = block.classList.contains('text-block') ? 'Text' : 'Instruction';
+                const content = block.querySelector('textarea').value;
+
+                if(type === "Text"){
+                    output = content;
+                    executionResultsDiv.innerHTML += `<p><strong>Text Block (${block.id}):</strong> ${output}</p>`;
+                } else {
+                    try{
+                        // Very basic "instruction" execution (replace with a safe eval or a proper interpreter)
+                        // WARNING: eval is generally unsafe. Consider a safer alternative in a production environment.
+                        const result = await executeInstruction(content, output);
+                        output = result; // Set the output for the next block
+                        executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Result: ${result}</p>`;
+                      } catch (error) {
+                        executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Error: ${error.message}</p>`;
+                        break; // Stop on error
+                      }
+                }
+                let nextConnection = connections.find(conn => conn.source === currentBlockId);
+                currentBlockId = nextConnection ? nextConnection.target : null;
+              }
+          }
+      });
+
+
+
+      // Event listeners for drag and connect
+      document.addEventListener('mousemove', doDrag);
+      document.addEventListener('mouseup', endDrag);
+
+
+    </script>
+</body>
+</html>
