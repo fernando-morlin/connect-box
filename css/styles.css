@@ -53,16 +53,18 @@ body {
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    min-width: 200px;
+    min-width: 150px;
+    min-height: 100px;
     z-index: 1; /* Ensure blocks are above lines */
     user-select: none; /* Prevent text selection on drag */
-    max-width: 90vw;
-    min-width: 150px;
+    max-width: none; /* Remove the max-width limit */
+    resize: none; /* Disable default resize */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .block textarea {
     width: 100%;
-    resize: vertical; /* Allow vertical resizing */
+    resize: none; /* Prevent textarea's own resize handle */
     border: 1px solid #ced4da;
     border-radius: 4px;
     padding: 5px;
@@ -71,7 +73,7 @@ body {
     font-size: inherit;
     box-sizing: border-box; /* Include padding and border in width */
     min-height: 60px;
-    max-height: 200px;
+    height: calc(100% - 45px); /* Adjust height to fit within block */
 }
 .block-label {
     font-size: 0.9em;
@@ -251,4 +253,20 @@ body {
 
 .play-button:hover {
   background-color: #218838;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background-color: #f0f0f0;
+    cursor: nwse-resize; /* Show resize cursor */
+    border-top-left-radius: 4px;
+    z-index: 3;
+}
+
+.resize-handle:hover {
+    background-color: #ddd;
 }

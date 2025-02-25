@@ -1,7 +1,7 @@
 // js/block-creation.js
 import { createElement } from './utils.js';
 import { startDrag } from './block-dragging.js';
-import { deleteBlock } from './block-connection.js'
+import { updateConnections, deleteBlock } from './block-connection.js';
 import { executeFromBlock } from './execution.js';
 
 let blockCount = 0;
@@ -46,6 +46,10 @@ function createBlock(type, x, y, workflowArea) {
 
         block.appendChild(deleteButton);
 
+        // Add resize handle
+        const resizeHandle = createElement('div', 'resize-handle');
+        block.appendChild(resizeHandle);
+
         // Add play button to instruction blocks only
         if (type === 'instruction') {
             const playButton = createElement('button', 'play-button');
@@ -62,12 +66,51 @@ function createBlock(type, x, y, workflowArea) {
 
 
         block.addEventListener('mousedown', startDrag);
+        
+        // Add resize functionality
+        resizeHandle.addEventListener('mousedown', startResize);
+        
         workflowArea.appendChild(block);
         return block;
     } catch (error) {
         console.error('Error creating block:', error);
         return null;
     }
+}
+
+// Add resize functionality
+function startResize(event) {
+    event.stopPropagation(); // Prevent block dragging
+    
+    const block = event.target.closest('.block');
+    const initialWidth = block.offsetWidth;
+    const initialHeight = block.offsetHeight;
+    const initialX = event.clientX;
+    const initialY = event.clientY;
+    
+    function doResize(moveEvent) {
+        const deltaX = moveEvent.clientX - initialX;
+        const deltaY = moveEvent.clientY - initialY;
+        
+        // Set minimum width and height
+        const newWidth = Math.max(150, initialWidth + deltaX);
+        const newHeight = Math.max(100, initialHeight + deltaY);
+        
+        block.style.width = `${newWidth}px`;
+        block.style.height = `${newHeight}px`;
+        
+        // Update connections as the block size changes
+        const workflowArea = document.getElementById('workflow-area');
+        updateConnections(workflowArea);
+    }
+    
+    function endResize() {
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', endResize);
+    }
+    
+    document.addEventListener('mousemove', doResize);
+    document.addEventListener('mouseup', endResize);
 }
 
 export { createBlock };
