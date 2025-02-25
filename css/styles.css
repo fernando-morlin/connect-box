@@ -496,8 +496,14 @@ option {
 }
 
 .image-block {
-    background-color: #9b4dca; /* Different color from instruction blocks */
+    background-color: #9b4dca;
     padding: 14px;
+    min-width: 220px;
+    min-height: 180px;
+    width: 280px;
+    height: 240px;
+    display: flex;
+    flex-direction: column;
 }
 
 .image-block input[type="file"] {
@@ -520,6 +526,7 @@ option {
     box-shadow: 4px 4px 0px #000;
     transition: all 0.2s;
     margin-bottom: 10px;
+    align-self: flex-start;
 }
 
 .image-block input[type="file"] + label:hover {
@@ -534,17 +541,28 @@ option {
 
 /* Fix image preview containment */
 .image-preview {
-    max-width: calc(100% - 6px); /* Account for borders */
-    max-height: calc(100% - 80px); /* Account for label and padding */
-    height: auto;
-    width: auto;
+    width: 100%;
+    height: calc(100% - 60px);
+    object-fit: contain;
+    background-color: white;
     border: 3px solid #000;
     margin-top: 10px;
-    background-color: white;
     display: block;
     box-sizing: border-box;
-    object-fit: contain; /* Maintain aspect ratio */
-    object-position: center; /* Center the image */
+}
+
+/* Container for image */
+.image-container {
+    flex: 1;
+    position: relative;
+    margin-top: 10px;
+    background-color: white;
+    border: 3px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 /* Update the add-image button color to match */
