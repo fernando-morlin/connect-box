@@ -92,6 +92,15 @@ async function executeWorkflow(workflowArea) {
                 const result = await executeInstruction(content, input);
                 output = result;
                 executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
+                
+                // Find outgoing text blocks and update their content
+                const outgoingConnections = window.connections.filter(conn => conn.source === currentBlockId);
+                for (const connection of outgoingConnections) {
+                    const targetBlock = document.getElementById(connection.target);
+                    if (targetBlock && targetBlock.classList.contains('text-block')) {
+                        targetBlock.querySelector('textarea').value = result;
+                    }
+                }
             } catch (error) {
                 executionResultsDiv.innerHTML += `<p><strong>Instruction (${block.id}):</strong> Error: ${error.message}</p>`;
                 continue; // Continue with other blocks even if one fails
@@ -204,9 +213,7 @@ async function executeFromBlock(startBlockId) {
 
             const nextBlock = document.getElementById(currentBlockId);
             if (nextBlock && nextBlock.classList.contains('text-block')) {
-                if (nextBlock.querySelector('textarea').value.trim() === '' || updatedBlocks.has(currentBlockId)) {
-                    nextBlock.querySelector('textarea').value = output;
-                }
+                nextBlock.querySelector('textarea').value = output;
             }
         }
     }
