@@ -1,177 +1,248 @@
-/* css/styles.css */
+/* css/styles.css - Neo Brutalism Update */
 body {
-    font-family: sans-serif;
+    font-family: 'Courier New', monospace; /* More brutalist typeface */
     margin: 0;
     display: flex;
     height: 100vh;
+    background-color: #f0f0f0;
 }
 
 #sidebar {
-    width: 64px; /* Fixed width for simplicity */
-    background-color: #f8f9fa;
-    border-right: 1px solid #dee2e6;
+    width: 80px; /* Slightly wider */
+    background-color: #ff7e5f; /* Bold color */
+    border-right: 4px solid #000; /* Thick border */
     padding: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
 #sidebar button {
-    background-color: transparent;
-    border: none;
-    padding: 8px;
-    border-radius: 8px;
+    background-color: #00c6ff;
+    border: 3px solid #000; /* Thick black border */
+    padding: 12px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex; /* Use flexbox for icon centering */
+    transition: all 0.2s;
+    display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 4px 4px 0px #000; /* Chunky shadow */
+    transform: rotate(-1deg); /* Slightly rotated */
+    width: 50px;
+    height: 50px;
 }
 
 #sidebar button:hover {
-    background-color: #e2e6ea;
+    transform: translateY(-2px) rotate(1deg);
+    box-shadow: 6px 6px 0px #000;
 }
 
-#sidebar button.add-text { color: #495057; }
-#sidebar button.add-instruction { color: #6610f2; }
-#sidebar button.settings { color: #495057; }
-#sidebar button.execute { color: #28a745; }
+#sidebar button:active {
+    transform: translateY(2px) rotate(0deg);
+    box-shadow: 2px 2px 0px #000;
+}
+
+#sidebar button.add-text { background-color: #ffd166; color: #000; }
+#sidebar button.add-instruction { background-color: #06d6a0; color: #000; }
+#sidebar button.settings { background-color: #118ab2; color: #000; }
+#sidebar button.execute { background-color: #ef476f; color: #000; }
 
 #workflow-area {
     flex: 1;
     padding: 20px;
-    background-color: #f0f2f5;
-    position: relative; /* Important for absolute positioning of blocks */
-    overflow: auto; /* Add scrollbars if content overflows */
+    background-color: #f8f9fa;
+    background-image: 
+        linear-gradient(#ddd 1px, transparent 1px),
+        linear-gradient(90deg, #ddd 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+    overflow: auto;
 }
 
 .block {
     position: absolute;
-    border: 1px solid #ced4da;
+    border: 4px solid #000; /* Thick border */
     background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    min-width: 150px;
-    min-height: 100px;
-    z-index: 1; /* Ensure blocks are above lines */
-    user-select: none; /* Prevent text selection on drag */
-    max-width: none; /* Remove the max-width limit */
-    resize: none; /* Disable default resize */
-    box-sizing: border-box; /* Include padding in width calculation */
+    border-radius: 2px; /* Less rounded */
+    padding: 14px;
+    box-shadow: 8px 8px 0px #000; /* Bold shadow */
+    min-width: 180px;
+    min-height: 120px;
+    z-index: 1;
+    user-select: none;
+    box-sizing: border-box;
+    transform: rotate(-0.5deg); /* Slight tilt */
+}
+
+.text-block {
+    background-color: #ffd166; /* Yellow for text blocks */
+}
+
+.instruction-block {
+    background-color: #06d6a0; /* Green for instruction blocks */
 }
 
 .block textarea {
     width: 100%;
-    resize: none; /* Prevent textarea's own resize handle */
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 5px;
-    margin-bottom: 5px;
-    font-family: inherit;
-    font-size: inherit;
-    box-sizing: border-box; /* Include padding and border in width */
-    min-height: 60px;
-    height: calc(100% - 45px); /* Adjust height to fit within block */
+    resize: none;
+    border: 3px solid #000;
+    border-radius: 0px; /* Square corners */
+    padding: 8px;
+    margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    box-sizing: border-box;
+    min-height: 70px;
+    height: calc(100% - 45px);
+    background-color: rgba(255, 255, 255, 0.8);
 }
+
 .block-label {
-    font-size: 0.9em;
-    margin-bottom: 0.3em;
-    color: #343a40;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #000;
+    text-transform: uppercase;
 }
 
 .handle {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 0; /* Square instead of round */
     position: absolute;
     cursor: pointer;
-    z-index: 2; /* Handles above blocks */
-    border: 1px solid transparent; /* For consistent hover effect */
+    z-index: 2;
+    border: 3px solid #000;
+    transform: rotate(45deg); /* Diamond shape */
 }
 
 .handle.left {
-    left: -6px;
+    left: -13px;
     top: 50%;
-    transform: translateY(-50%);
-    background-color: #6610f2; /* Purple for input */
+    transform: translateY(-50%) rotate(45deg);
+    background-color: #ef476f; /* Bold color */
 }
+
 .handle.right {
-    right: -6px;
+    right: -13px;
     top: 50%;
-    transform: translateY(-50%);
-    background-color: #28a745; /* Green for output */
+    transform: translateY(-50%) rotate(45deg);
+    background-color: #118ab2; /* Bold color */
 }
 
 .handle:hover {
-    border-color: rgba(0,0,0,0.2); /* Subtle hover effect */
+    transform: translateY(-50%) rotate(45deg) scale(1.2);
 }
 
-/* Line drawing styles */
-.connection-line {
-    position: absolute;
-    pointer-events: none; /*  Make lines non-interactive */
-    z-index: 0; /*  Place lines behind blocks */
-}
 .connection-line line {
-    stroke: #999; /*  Neutral line color */
-    stroke-width: 2;
+    stroke: #000; /* Black lines */
+    stroke-width: 4; /* Thicker lines */
+    stroke-linecap: square; /* Square ends */
 }
 
-
-/* SVG Icon Styles (using inline SVG for simplicity) */
-.icon {
-    width: 24px;
-    height: 24px;
+.delete-button, .play-button {
+    position: absolute;
+    border: 3px solid #000;
+    border-radius: 0px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 3;
+    box-shadow: 3px 3px 0px #000;
 }
 
 .delete-button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  z-index:3;
+    top: 5px;
+    right: 5px;
+    background-color: #ef476f;
+    color: white;
 }
 
-.delete-button:hover {
-  background-color: #d32f2f;
+.play-button {
+    top: 5px;
+    right: 40px;
+    background-color: #118ab2;
+    color: white;
+}
+
+.delete-button:hover, .play-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 5px 5px 0px #000;
+}
+
+.delete-button:active, .play-button:active {
+    transform: translateY(2px);
+    box-shadow: 1px 1px 0px #000;
 }
 
 #execution-results {
-  margin-top: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  display: none; /* Initially hidden */
-}
-#execution-results.visible{
-  display: block;
+    margin-top: 20px;
+    padding: 15px;
+    border: 4px solid #000;
+    background-color: white;
+    display: none;
+    box-shadow: 6px 6px 0px #000;
 }
 
-.connection-status {
-    position: absolute;
-    top: 5px; /* Adjust positioning as needed */
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    display: none; /* Initially hidden */
-}
-.connection-status.visible{
+#execution-results.visible {
     display: block;
+}
+
+/* Modal styles update */
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 25px;
+    border: 5px solid #000;
+    border-radius: 2px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 12px 12px 0px #000;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 3px solid #000;
+    border-radius: 0;
+    background-color: #f8f9fa;
+    font-family: 'Courier New', monospace;
+}
+
+#save-settings {
+    background-color: #118ab2;
+    border: 3px solid #000;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    box-shadow: 4px 4px 0px #000;
+    font-family: 'Courier New', monospace;
+}
+
+#save-settings:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0px #000;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background-color: #000;
+    cursor: nwse-resize;
+    z-index: 3;
 }
 
 /* Add these styles to the existing CSS */
@@ -192,8 +263,6 @@ body {
         height: calc(100vh - 64px);
     }
 }
-
-
 
 /* Add this to your existing style section */
 .modal {
