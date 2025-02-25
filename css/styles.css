@@ -191,10 +191,15 @@ body {
     background-color: white;
     display: none;
     box-shadow: 6px 6px 0px #000;
+    transition: all 0.3s ease;
 }
 
 #execution-results.visible {
     display: block;
+}
+
+#execution-results.hidden {
+    display: none !important; /* Added !important to override any other display settings */
 }
 
 /* Modal styles update */
@@ -455,4 +460,36 @@ option {
 #execution-results p {
     margin-bottom: 15px;
     line-height: 1.6;
+}
+
+#results-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    padding: 8px 16px;
+    background-color: #118ab2;
+    color: white;
+    border: 3px solid #000;
+    border-radius: 2px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px #000;
+    transform: rotate(-0.5deg);
+    z-index: 100;  /* Increased z-index to ensure button stays on top */
+    transition: all 0.2s;
+}
+
+#results-toggle:hover {
+    transform: translateY(-2px) rotate(0.5deg);
+    box-shadow: 6px 6px 0px #000;
+}
+
+#results-toggle:active {
+    transform: translateY(2px) rotate(0deg);
+    box-shadow: 2px 2px 0px #000;
+}
+
+#execution-results.hidden {
+    display: none !important; /* Added !important to override any other display settings */
 }

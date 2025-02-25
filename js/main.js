@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTextBtn = document.querySelector('.add-text');
     const addInstructionBtn = document.querySelector('.add-instruction');
     const executeBtn = document.querySelector('.execute');
+    const resultsToggle = document.getElementById('results-toggle');
+    const executionResults = document.getElementById('execution-results');
 
      // --- Event Listeners ---
 
@@ -26,6 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
     executeBtn.addEventListener('click', () => {
         executeWorkflow(workflowArea);
     });
+
+    if (resultsToggle && executionResults) {
+        resultsToggle.addEventListener('click', () => {
+            executionResults.classList.toggle('hidden');
+            resultsToggle.textContent = executionResults.classList.contains('hidden') 
+                ? 'Show Results' 
+                : 'Hide Results';
+            
+            // Force a DOM reflow to ensure the visibility change takes effect
+            void executionResults.offsetHeight;
+        });
+    }
 
     // Event listeners for drag and connect
     document.addEventListener('mousemove', doDrag);
