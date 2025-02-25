@@ -107,6 +107,7 @@ body {
     text-transform: uppercase;
 }
 
+/* Fixing the handle styles to make them square instead of diamond shaped */
 .handle {
     width: 20px;
     height: 20px;
@@ -115,25 +116,25 @@ body {
     cursor: pointer;
     z-index: 2;
     border: 3px solid #000;
-    transform: rotate(45deg); /* Diamond shape */
+    transform: none; /* Remove diamond rotation */
 }
 
 .handle.left {
     left: -13px;
     top: 50%;
-    transform: translateY(-50%) rotate(45deg);
+    transform: translateY(-50%); /* Only center vertically */
     background-color: #ef476f; /* Bold color */
 }
 
 .handle.right {
     right: -13px;
     top: 50%;
-    transform: translateY(-50%) rotate(45deg);
+    transform: translateY(-50%); /* Only center vertically */
     background-color: #118ab2; /* Bold color */
 }
 
 .handle:hover {
-    transform: translateY(-50%) rotate(45deg) scale(1.2);
+    transform: translateY(-50%) scale(1.2); /* Remove rotation from hover state */
 }
 
 .connection-line line {
@@ -142,6 +143,7 @@ body {
     stroke-linecap: square; /* Square ends */
 }
 
+/* Fix play button positioning and styling to match delete button */
 .delete-button, .play-button {
     position: absolute;
     border: 3px solid #000;
@@ -167,7 +169,7 @@ body {
 
 .play-button {
     top: 5px;
-    right: 40px;
+    right: 40px; /* Increased space between buttons */
     background-color: #118ab2;
     color: white;
 }
@@ -211,10 +213,54 @@ body {
 .form-group select {
     width: 100%;
     padding: 10px;
-    border: 3px solid #000;
-    border-radius: 0;
+    border: 3px solid #000; /* Thick border for brutalist style */
+    border-radius: 0; /* Square corners */
     background-color: #f8f9fa;
     font-family: 'Courier New', monospace;
+    font-size: 14px;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    margin-bottom: 5px;
+    height: 40px; /* Fixed height for all inputs/selects */
+    -webkit-appearance: none; /* Remove default styling */
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Style for dropdown arrow */
+.form-group select {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 24px;
+    padding-right: 30px; /* Space for arrow */
+}
+
+/* Style for dropdown options - add this after your form-group select styles */
+.form-group select option {
+    background-color: #f8f9fa;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    padding: 10px;
+    border-bottom: 2px solid #000;
+}
+
+/* Add this to ensure dropdown styling is applied across browsers */
+select::-ms-expand {
+    display: none;
+}
+
+/* Custom dropdown styling when open */
+.form-group select:focus {
+    border: 3px solid #118ab2;
+    box-shadow: 6px 6px 0px #000;
+}
+
+/* Add focus styles to match brutalist theme */
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #118ab2;
+    box-shadow: 4px 4px 0px #000;
 }
 
 #save-settings {
@@ -279,10 +325,12 @@ body {
 .modal-content {
     background-color: white;
     margin: 15% auto;
-    padding: 20px;
-    border-radius: 8px;
+    padding: 25px;
+    border: 5px solid #000;
+    border-radius: 2px;
     width: 80%;
     max-width: 500px;
+    box-shadow: 12px 12px 0px #000;
 }
 
 .form-group {
@@ -294,34 +342,37 @@ body {
     margin-bottom: 5px;
 }
 
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
+/* Remove the conflicting play-button style at the bottom of the file */
+/* Replace with this updated version */
 .play-button {
-  position: absolute;
-  top: 5px;
-  right: 30px; /* Position to the left of the delete button */
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  z-index: 3;
+    position: absolute;
+    top: 5px;
+    right: 40px;
+    background-color: #28a745;
+    color: white;
+    border: 3px solid #000;
+    border-radius: 0px; /* Square corners */
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 3;
+    box-shadow: 3px 3px 0px #000;
 }
 
 .play-button:hover {
-  background-color: #218838;
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 5px 5px 0px #000;
+}
+
+.play-button:active {
+    transform: translateY(2px);
+    box-shadow: 1px 1px 0px #000;
 }
 
 .resize-handle {
@@ -338,4 +389,52 @@ body {
 
 .resize-handle:hover {
     background-color: #ddd;
+}
+
+/* Update your form styles to ensure consistent sizing */
+.form-group input,
+.form-group select,
+#api-key,
+#openrouter-api-key {
+    width: 100%;
+    padding: 10px;
+    border: 3px solid #000;
+    border-radius: 0;
+    background-color: #f8f9fa;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    height: 40px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Enhanced neo-brutalist dropdown style */
+.form-group select {
+    background-color: #f8f9fa;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 24px;
+    padding-right: 30px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0px #000;
+}
+
+/* Style the dropdown options */
+option {
+    background-color: #f8f9fa;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    padding: 10px;
+    border-bottom: 2px solid #000;
+}
+
+/* Style the select when it's open */
+.form-group select:focus {
+    border: 3px solid #118ab2;
+    box-shadow: 6px 6px 0px #000;
+    outline: none;
 }
