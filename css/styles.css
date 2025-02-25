@@ -48,6 +48,7 @@ body {
 #sidebar button.add-instruction { background-color: #06d6a0; color: #000; }
 #sidebar button.settings { background-color: #118ab2; color: #000; }
 #sidebar button.execute { background-color: #ef476f; color: #000; }
+#sidebar button.add-image { background-color: #9b4dca !important; /* Match image block color */ }
 
 #workflow-area {
     flex: 1;
@@ -534,12 +535,16 @@ option {
 /* Fix image preview containment */
 .image-preview {
     max-width: calc(100% - 6px); /* Account for borders */
+    max-height: calc(100% - 80px); /* Account for label and padding */
     height: auto;
+    width: auto;
     border: 3px solid #000;
     margin-top: 10px;
     background-color: white;
     display: block;
     box-sizing: border-box;
+    object-fit: contain; /* Maintain aspect ratio */
+    object-position: center; /* Center the image */
 }
 
 /* Update the add-image button color to match */
