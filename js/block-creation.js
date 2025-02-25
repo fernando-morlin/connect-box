@@ -65,6 +65,7 @@ function createBlock(type, x, y, workflowArea) {
         block.appendChild(connectionStatus);
 
 
+        label.addEventListener('mousedown', startDrag);
         block.addEventListener('mousedown', startDrag);
         
         // Add resize functionality
