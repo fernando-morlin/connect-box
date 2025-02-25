@@ -240,6 +240,28 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
+        .play-button {
+          position: absolute;
+          top: 5px;
+          right: 30px; /* Position to the left of the delete button */
+          background-color: #28a745;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 12px;
+          z-index: 3;
+        }
+
+        .play-button:hover {
+          background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -404,6 +426,18 @@
               });
 
               block.appendChild(deleteButton);
+
+              // Add play button to instruction blocks only
+              if (type === 'instruction') {
+                  const playButton = createElement('button', 'play-button');
+                  playButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+                  playButton.title = "Run from this block";
+                  playButton.addEventListener('click', (event) => {
+                      event.stopPropagation(); // Prevent block dragging when clicking play
+                      executeFromBlock(block.id);
+                  });
+                  block.appendChild(playButton);
+              }
 
               const connectionStatus = createElement('div', 'connection-status');
               block.appendChild(connectionStatus);
@@ -923,7 +957,90 @@
         }
       });
 
-
+      async function executeFromBlock(startBlockId) {
+        executionResultsDiv.innerHTML = ''; // Clear previous results
+        executionResultsDiv.classList.add('visible');
+        executionResultsDiv.innerHTML += `<p><strong>Executing from block:</strong> ${startBlockId}</p>`;
+        
+        // Track which blocks have been processed
+        const updatedBlocks = new Set();
+        
+        // Store input data for blocks
+        const blockInputs = new Map();
+        
+        // Check if block has incoming connections
+        const incomingConnections = connections.filter(conn => conn.target === startBlockId);
+        let input = '';
+        
+        // If there are incoming connections, notify the user that we're not using them
+        if (incomingConnections.length > 0) {   
+          executionResultsDiv.innerHTML += `<p><em>Note: Starting execution from this point. Input from previous blocks in the workflow will not be used.</em></p>`;
+        }
+        
+        let currentBlockId = startBlockId;
+        let output = '';
+        
+        // First, verify that the starting block exists
+        const startBlock = document.getElementById(currentBlockId);
+        if (!startBlock) {
+          executionResultsDiv.innerHTML += `<p>Error: Starting block with ID ${currentBlockId} not found.</p>`;
+          return;
+        }
+        
+        while(currentBlockId) {
+          const block = document.getElementById(currentBlockId);
+          if (!block) {
+            executionResultsDiv.innerHTML += `<p>Error: Block with ID ${currentBlockId} not found.</p>`;
+            break;
+          }
+  
+          const type = block.classList.contains('text-block') ? 'Text' : 'Instruction';
+          const content = block.querySelector('textarea').value;
+          const blockInput = blockInputs.get(currentBlockId) || input; // Use provided input if available
+  
+          if(type === "Text") {
+            // For text blocks, either use their content or upstream input
+            if ((blockInput && content.trim() === '') || updatedBlocks.has(currentBlockId)) {
+              block.querySelector('textarea').value = blockInput;
+              output = blockInput;
+            } else {
+              output = content;
+            }
+            executionResultsDiv.innerHTML += `<p><strong>Text Block (${block.id}):</strong> ${output}</p>`;
+          } else {
+            try {
+              // For instruction blocks, use the instruction and any available input
+              const result = await executeInstruction(content, blockInput);
+              output = result;
+              executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Result: ${result}</p>`;
+            } catch (error) {
+              executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Error: ${error.message}</p>`;
+              break;
+            }
+          }
+          
+          // Mark this block as processed
+          updatedBlocks.add(currentBlockId);
+          
+          // Find the next block in the workflow
+          let nextConnection = connections.find(conn => conn.source === currentBlockId);
+          currentBlockId = nextConnection ? nextConnection.target : null;
+          
+          // Store output for next block
+          if (currentBlockId && output) {
+            blockInputs.set(currentBlockId, output);
+            
+            // Update text block content directly if needed
+            const nextBlock = document.getElementById(currentBlockId);
+            if (nextBlock && nextBlock.classList.contains('text-block')) {
+              // Only auto-update empty text blocks or ones we've already processed
+              if (nextBlock.querySelector('textarea').value.trim() === '' || updatedBlocks.has(currentBlockId)) {
+                nextBlock.querySelector('textarea').value = output;
+              }
+            }
+          }
+        }
+      }
 
       // Event listeners for drag and connect
       document.addEventListener('mousemove', doDrag);
