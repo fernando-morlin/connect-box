@@ -86,14 +86,14 @@ async function executeWorkflow(workflowArea) {
             } else {
                 output = content;
             }
-            executionResultsDiv.innerHTML += `<p><strong>Text Block (${block.id}):</strong> ${output}</p>`;
+            executionResultsDiv.innerHTML += `<p><span class="result-label">Text (${block.id}):</span> ${output}</p>`;
         } else {
             try {
                 const result = await executeInstruction(content, input);
                 output = result;
-                executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Result: ${result}</p>`;
+                executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
             } catch (error) {
-                executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Error: ${error.message}</p>`;
+                executionResultsDiv.innerHTML += `<p><strong>Instruction (${block.id}):</strong> Error: ${error.message}</p>`;
                 continue; // Continue with other blocks even if one fails
             }
         }
@@ -183,14 +183,14 @@ async function executeFromBlock(startBlockId) {
             } else {
                 output = content;
             }
-            executionResultsDiv.innerHTML += `<p><strong>Text Block (${block.id}):</strong> ${output}</p>`;
+            executionResultsDiv.innerHTML += `<p><span class="result-label">Text (${block.id}):</span> ${output}</p>`;
         } else {
             try {
                 const result = await executeInstruction(content, blockInput);
                 output = result;
-                executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Result: ${result}</p>`;
+                executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
             } catch (error) {
-                executionResultsDiv.innerHTML += `<p><strong>Instruction Block (${block.id}):</strong> Error: ${error.message}</p>`;
+                executionResultsDiv.innerHTML += `<p><strong>Instruction (${block.id}):</strong> Error: ${error.message}</p>`;
                 break;
             }
         }

@@ -23,7 +23,7 @@ function createBlock(type, x, y, workflowArea) {
         block.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
 
         const label = createElement('div', 'block-label');
-        label.textContent = type === 'text' ? 'Text Block' : 'Instruction Block';
+        label.textContent = type === 'text' ? 'Text' : 'Instruction';
         block.appendChild(label);
 
 

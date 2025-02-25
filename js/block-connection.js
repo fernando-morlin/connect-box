@@ -28,14 +28,24 @@ function updateConnections(workflowArea) {
             const x2 = targetRect.left + targetRect.width / 2 - workflowRect.left;
             const y2 = targetRect.top + targetRect.height / 2 - workflowRect.top;
 
-            // Create SVG container
+            // Create SVG container with minimum dimensions
             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             svg.setAttribute("class", "connection-line");
             svg.style.position = "absolute";
-            svg.style.left = Math.min(x1, x2) + "px";
-            svg.style.top = Math.min(y1, y2) + "px";
-            svg.style.width = Math.abs(x2 - x1) + "px";
-            svg.style.height = Math.abs(y2 - y1) + "px";
+            
+            // Set minimum dimensions for SVG (increased from 4px to 10px)
+            const minDimension = 10;
+            const width = Math.max(Math.abs(x2 - x1), minDimension);
+            const height = Math.max(Math.abs(y2 - y1), minDimension);
+            
+            // Adjust position to account for minimum dimensions
+            const left = Math.min(x1, x2) - (width === minDimension ? minDimension/2 : 0);
+            const top = Math.min(y1, y2) - (height === minDimension ? minDimension/2 : 0);
+            
+            svg.style.left = left + "px";
+            svg.style.top = top + "px";
+            svg.style.width = width + "px";
+            svg.style.height = height + "px";
 
             // Create line element
             const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -43,8 +53,8 @@ function updateConnections(workflowArea) {
             line.setAttribute("y1", y1 < y2 ? 0 : Math.abs(y2 - y1));
             line.setAttribute("x2", x1 < x2 ? Math.abs(x2 - x1) : 0);
             line.setAttribute("y2", y1 < y2 ? Math.abs(y2 - y1) : 0);
-            line.setAttribute("stroke", "#999");
-            line.setAttribute("stroke-width", "2");
+            line.setAttribute("stroke", "#000");
+            line.setAttribute("stroke-width", "4");
 
             svg.appendChild(line);
             workflowArea.appendChild(svg);

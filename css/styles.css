@@ -438,3 +438,21 @@ option {
     box-shadow: 6px 6px 0px #000;
     outline: none;
 }
+
+/* Add this to the bottom of your css/styles.css file */
+.result-label {
+    background-color: #ffd166; /* Same yellow as text blocks */
+    padding: 2px 6px;
+    border: 3px solid #000;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 3px 3px 0px #000; /* Neo-brutalist shadow */
+    transform: rotate(-0.5deg); /* Slight tilt like blocks */
+    font-family: 'Courier New', monospace;
+}
+
+#execution-results p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
