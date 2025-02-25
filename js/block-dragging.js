@@ -8,12 +8,17 @@ let dragTarget = null;
 let connectStart = null;
 let temporaryLine = null;
 
-
 function startDrag(event) {
+    // Don't initiate dragging when clicking on textarea, buttons or resize handle
+    if (event.target.tagName === 'TEXTAREA' || 
+        event.target.tagName === 'BUTTON' || 
+        event.target.classList.contains('resize-handle')) {
+        return;
+    }
+    
     const workflowArea = document.getElementById('workflow-area');
     isDragging = true;
     dragTarget = event.target.closest('.block'); // Find the closest parent with class 'block'
-
 
     if (event.target.classList.contains('handle')) {
         isConnecting = true;
@@ -26,7 +31,6 @@ function startDrag(event) {
         const workflowAreaRect = workflowArea.getBoundingClientRect();
         const x1 = startHandle.left + startHandle.width / 2 - workflowAreaRect.left;
         const y1 = startHandle.top + startHandle.height / 2 - workflowAreaRect.top;
-
 
         temporaryLine = createElement('svg', 'connection-line', {
             width: 0,
@@ -43,7 +47,6 @@ function startDrag(event) {
         });
         temporaryLine.appendChild(path);
         workflowArea.appendChild(temporaryLine);
-
 
         event.preventDefault(); // Prevent text selection during drag
     } else {
@@ -78,14 +81,12 @@ function doDrag(event) {
         temporaryLine.setAttribute('width', Math.abs(x2 - x1));
         temporaryLine.setAttribute('height', Math.abs(y2 - y1));
 
-
         // Update line coordinates
         const path = temporaryLine.querySelector('line');
         path.setAttribute('x1', x1 < x2 ? 0 : Math.abs(x2 - x1));
         path.setAttribute('y1', y1 < y2 ? 0 : Math.abs(y2 - y1));
         path.setAttribute('x2', x1 < x2 ? Math.abs(x2 - x1) : 0);
         path.setAttribute('y2', y1 < y2 ? Math.abs(y2 - y1) : 0);
-
 
     } else {
         // Block dragging
@@ -158,7 +159,5 @@ function endDrag(event) {
     dragTarget = null;
     connectStart = null;
 }
-
-
 
 export { startDrag, doDrag, endDrag };
