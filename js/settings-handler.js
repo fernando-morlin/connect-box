@@ -101,6 +101,44 @@ function saveSettings() {
     localStorage.setItem('gemini-model', selectedModel);
     localStorage.setItem('openrouter-api-key', openrouterApiKey);
     localStorage.setItem('openrouter-model', openrouterModel);
+    
+    // Debug: Log the state before clearing
+    console.log("Before clearing block settings:");
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('block-')) {
+            console.log(`${key}: ${localStorage.getItem(key)}`);
+        }
+    }
+    
+    // Clear out all block-specific settings
+    // First get all keys from localStorage
+    const keys = Object.keys(localStorage);
+    
+    // Filter for block-specific settings
+    const blockSettingsKeys = keys.filter(key => 
+        key.startsWith('block-') && 
+        (key.endsWith('-api-provider') || 
+         key.endsWith('-gemini-model') || 
+         key.endsWith('-openrouter-model'))
+    );
+    
+    console.log("Found block settings to remove:", blockSettingsKeys);
+    
+    // Remove all block-specific settings
+    blockSettingsKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`Removed: ${key}`);
+    });
+    
+    // Debug: Log the state after clearing
+    console.log("After clearing block settings:");
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('block-')) {
+            console.log(`${key}: ${localStorage.getItem(key)}`);
+        }
+    }
 
     settingsModal.style.display = 'none';
 }
