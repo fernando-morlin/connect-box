@@ -105,8 +105,12 @@ function createBlock(type, x, y, workflowArea) {
             // Add a click event for debugging
             gearButton.addEventListener('click', (event) => {
                 event.stopPropagation();
-                console.log(`Gear button clicked on block ${block.id}`);
-                alert(`Gear button clicked on block ${block.id}`); // Debug visual feedback
+                
+                // Remove debug alert
+                // alert(`Gear button clicked on block ${block.id}`);
+                
+                // Show block-specific settings modal
+                showBlockSettings(block.id);
             });
             
             block.appendChild(gearButton);
@@ -160,6 +164,131 @@ function startResize(event) {
     
     document.addEventListener('mousemove', doResize);
     document.addEventListener('mouseup', endResize);
+}
+
+function showBlockSettings(blockId) {
+    // Get or create block-specific settings modal
+    let blockSettingsModal = document.getElementById(`settings-modal-${blockId}`);
+    
+    if (!blockSettingsModal) {
+        // Clone the main settings modal and customize for this block
+        const mainModal = document.getElementById('settings-modal');
+        blockSettingsModal = mainModal.cloneNode(true);
+        blockSettingsModal.id = `settings-modal-${blockId}`;
+        
+        // Remove the API key settings since those are global
+        const apiKeyInputs = blockSettingsModal.querySelectorAll('#api-key, #openrouter-api-key');
+        apiKeyInputs.forEach(input => {
+            const parentGroup = input.closest('.form-group');
+            if (parentGroup) {
+                parentGroup.remove();
+            }
+        });
+        
+        // Change the title to indicate block-specific settings
+        const title = blockSettingsModal.querySelector('h2');
+        if (title) {
+            title.textContent = `Block Settings (${blockId})`;
+        }
+        
+        // Change the save button ID and behavior
+        const saveButton = blockSettingsModal.querySelector('#save-settings');
+        if (saveButton) {
+            saveButton.id = `save-settings-${blockId}`;
+            saveButton.textContent = 'Save Block Settings';
+            saveButton.addEventListener('click', () => {
+                saveBlockSettings(blockId, blockSettingsModal);
+            });
+        }
+        
+        // Load current block settings
+        loadBlockSettings(blockId, blockSettingsModal);
+        
+        // Add modal to body
+        document.body.appendChild(blockSettingsModal);
+    }
+    
+    // Show the modal
+    blockSettingsModal.style.display = 'block';
+    
+    // Add closing behavior for the modal
+    window.addEventListener('click', function closeBlockModal(event) {
+        if (event.target === blockSettingsModal) {
+            blockSettingsModal.style.display = 'none';
+            window.removeEventListener('click', closeBlockModal);
+        }
+    });
+}
+
+function loadBlockSettings(blockId, modal) {
+    // Get the block's current settings from localStorage or use defaults
+    const apiProvider = localStorage.getItem(`block-${blockId}-api-provider`) || localStorage.getItem('api-provider') || 'gemini';
+    const modelSelect = apiProvider === 'gemini' 
+        ? (localStorage.getItem(`block-${blockId}-gemini-model`) || localStorage.getItem('gemini-model') || 'gemini-2.0-pro-exp-02-05')
+        : (localStorage.getItem(`block-${blockId}-openrouter-model`) || localStorage.getItem('openrouter-model') || 'deepseek/deepseek-chat:free');
+    
+    // Set the current values in the modal
+    const providerSelect = modal.querySelector('#api-provider');
+    if (providerSelect) {
+        providerSelect.value = apiProvider;
+    }
+    
+    // Show/hide appropriate settings sections based on provider
+    const geminiSettings = modal.querySelector('#gemini-settings');
+    const openrouterSettings = modal.querySelector('#openrouter-settings');
+    
+    if (apiProvider === 'gemini' && geminiSettings && openrouterSettings) {
+        geminiSettings.style.display = 'block';
+        openrouterSettings.style.display = 'none';
+        
+        const geminiModelSelect = modal.querySelector('#model-select');
+        if (geminiModelSelect) {
+            geminiModelSelect.value = modelSelect;
+        }
+    } else if (geminiSettings && openrouterSettings) {
+        geminiSettings.style.display = 'none';
+        openrouterSettings.style.display = 'block';
+        
+        const openrouterModelSelect = modal.querySelector('#openrouter-model-select');
+        if (openrouterModelSelect) {
+            openrouterModelSelect.value = modelSelect;
+        }
+    }
+    
+    // Set up change handler for API provider selection
+    const apiProviderSelect = modal.querySelector('#api-provider');
+    if (apiProviderSelect) {
+        apiProviderSelect.addEventListener('change', () => {
+            if (apiProviderSelect.value === 'gemini' && geminiSettings && openrouterSettings) {
+                geminiSettings.style.display = 'block';
+                openrouterSettings.style.display = 'none';
+            } else if (geminiSettings && openrouterSettings) {
+                geminiSettings.style.display = 'none';
+                openrouterSettings.style.display = 'block';
+            }
+        });
+    }
+}
+
+function saveBlockSettings(blockId, modal) {
+    // Get values from the modal
+    const apiProviderSelect = modal.querySelector('#api-provider');
+    const geminiModelSelect = modal.querySelector('#model-select');
+    const openrouterModelSelect = modal.querySelector('#openrouter-model-select');
+    
+    if (apiProviderSelect) {
+        const apiProvider = apiProviderSelect.value;
+        localStorage.setItem(`block-${blockId}-api-provider`, apiProvider);
+        
+        if (apiProvider === 'gemini' && geminiModelSelect) {
+            localStorage.setItem(`block-${blockId}-gemini-model`, geminiModelSelect.value);
+        } else if (openrouterModelSelect) {
+            localStorage.setItem(`block-${blockId}-openrouter-model`, openrouterModelSelect.value);
+        }
+    }
+    
+    // Hide modal after saving
+    modal.style.display = 'none';
 }
 
 export { createBlock };

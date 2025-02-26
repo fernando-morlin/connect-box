@@ -2,8 +2,12 @@
 import { getSettings } from './settings-handler.js';
 
 // Function to call Gemini API
-async function callGeminiAPI(prompt, imageData = null) {
-    const { apiKey, selectedModel } = getSettings();
+async function callGeminiAPI(prompt, imageData = null, apiKey = null, selectedModel = null) {
+    // If no specific API key or model is provided, use global settings
+    const settings = getSettings();
+    apiKey = apiKey || settings.apiKey;
+    selectedModel = selectedModel || settings.selectedModel;
+    
     if (!apiKey) {
         throw new Error('API key not configured. Please set it in settings.');
     }
@@ -44,8 +48,12 @@ async function callGeminiAPI(prompt, imageData = null) {
 }
 
 // Function to call OpenRouter API
-async function callOpenRouterAPI(prompt, imageData = null) {
-    const { openrouterApiKey, openrouterModel } = getSettings();
+async function callOpenRouterAPI(prompt, imageData = null, openrouterApiKey = null, openrouterModel = null) {
+    // If no specific API key or model is provided, use global settings
+    const settings = getSettings();
+    openrouterApiKey = openrouterApiKey || settings.openrouterApiKey;
+    openrouterModel = openrouterModel || settings.openrouterModel;
+    
     if (!openrouterApiKey) {
         throw new Error('OpenRouter API key not configured. Please set it in settings.');
     }
@@ -118,19 +126,51 @@ async function callOpenRouterAPI(prompt, imageData = null) {
 }
 
 // Unified function to execute instruction (using either Gemini or OpenRouter)
-async function executeInstruction(content, input, imageData = null) {
-    const { apiProvider } = getSettings();
+async function executeInstruction(content, input, imageData = null, blockId = null) {
+    // Get global settings first
+    const globalSettings = getSettings();
+    
+    // Default to global settings
+    let apiProvider = globalSettings.apiProvider;
+    let apiKey = globalSettings.apiKey;
+    let selectedModel = globalSettings.selectedModel;
+    let openrouterApiKey = globalSettings.openrouterApiKey;
+    let openrouterModel = globalSettings.openrouterModel;
+    
+    // If blockId is provided, try to use block-specific settings for provider and model
+    if (blockId) {
+        // Check if block-specific API provider exists
+        const blockApiProvider = localStorage.getItem(`block-${blockId}-api-provider`);
+        if (blockApiProvider) {
+            apiProvider = blockApiProvider;
+            
+            // Based on the provider, get the appropriate model
+            if (apiProvider === 'gemini') {
+                const blockGeminiModel = localStorage.getItem(`block-${blockId}-gemini-model`);
+                if (blockGeminiModel) {
+                    selectedModel = blockGeminiModel;
+                }
+            } else {
+                const blockOpenrouterModel = localStorage.getItem(`block-${blockId}-openrouter-model`);
+                if (blockOpenrouterModel) {
+                    openrouterModel = blockOpenrouterModel;
+                }
+            }
+        }
+    }
+    
     try {
         // If there's input, combine it with the instruction
         const prompt = input ? `${content}\nInput: ${input}` : content;
-
-        // Use the appropriate API based on user selection
+        
+        console.log(`Executing ${blockId} with provider: ${apiProvider}, model: ${apiProvider === 'gemini' ? selectedModel : openrouterModel}`);
+        
+        // Use the appropriate API based on settings
         if (apiProvider === 'gemini') {
-            const result = await callGeminiAPI(prompt, imageData);
+            const result = await callGeminiAPI(prompt, imageData, apiKey, selectedModel);
             return result;
         } else {
-            // OpenRouter now supports images for compatible models
-            const result = await callOpenRouterAPI(prompt, imageData);
+            const result = await callOpenRouterAPI(prompt, imageData, openrouterApiKey, openrouterModel);
             return result;
         }
     } catch (error) {

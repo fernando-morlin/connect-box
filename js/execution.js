@@ -116,7 +116,7 @@ async function executeWorkflow(workflowArea) {
             executionResultsDiv.innerHTML += `<p><span class="result-label">Image (${block.id}):</span> [Image data available for processing]</p>`;
         } else {
             try {
-                const result = await executeInstruction(content, input, imageData);
+                const result = await executeInstruction(content, input, imageData, currentBlockId);
                 output = result;
                 
                 // Find outgoing text blocks and update their content
@@ -274,7 +274,7 @@ async function executeFromBlock(startBlockId) {
             executionResultsDiv.innerHTML += `<p><span class="result-label">Image (${block.id}):</span> [Image data available for processing]</p>`;
         } else {
             try {
-                const result = await executeInstruction(content, blockInput, blockImageData);
+                const result = await executeInstruction(content, blockInput, blockImageData, currentBlockId);
                 output = result;
                 
                 // Find outgoing text blocks and update their content
