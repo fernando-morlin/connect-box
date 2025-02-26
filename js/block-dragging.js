@@ -26,26 +26,20 @@ function startDrag(event) {
             blockId: dragTarget.id,
             handleType: event.target.classList.contains('left') ? 'left' : 'right'
         };
-        // Create temporary line
-        const startHandle = event.target.getBoundingClientRect();
-        const workflowAreaRect = workflowArea.getBoundingClientRect();
-        const x1 = startHandle.left + startHandle.width / 2 - workflowAreaRect.left;
-        const y1 = startHandle.top + startHandle.height / 2 - workflowAreaRect.top;
-
-        temporaryLine = createElement('svg', 'connection-line', {
-            width: 0,
-            height: 0,
-            style: `left: ${x1}px; top: ${y1}px;`
-        });
-        const path = createElement('line', null, {
-            x1: 0,
-            y1: 0,
-            x2: 0, // Initialize x2 and y2
-            y2: 0, // Initialize x2 and y2
-            stroke: '#999',
-            'stroke-width': 2
-        });
-        temporaryLine.appendChild(path);
+        
+        // Create SVG element for the temporary connection line with a distinctive style
+        temporaryLine = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        temporaryLine.classList.add('connection-line', 'temporary-connection');
+        temporaryLine.style.position = "absolute";
+        temporaryLine.style.zIndex = "1000"; // Higher z-index to ensure visibility
+        
+        // Create the line element inside SVG with emphasized styling
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("stroke", "#06d6a0"); // Use a bright green color for visibility
+        line.setAttribute("stroke-width", "4");
+        line.setAttribute("stroke-dasharray", "8,4"); // More visible dash pattern
+        
+        temporaryLine.appendChild(line);
         workflowArea.appendChild(temporaryLine);
 
         event.preventDefault(); // Prevent text selection during drag
@@ -62,32 +56,50 @@ function doDrag(event) {
     if (!isDragging) return;
 
     if (isConnecting && temporaryLine) {
-        // Update temporary line
-        const startHandle = document.getElementById(connectStart.blockId).querySelector(`.handle.${connectStart.handleType}`).getBoundingClientRect();
-        const workflowAreaRect = workflowArea.getBoundingClientRect();
-        const x1 = startHandle.left + startHandle.width / 2 - workflowAreaRect.left;
-        const y1 = startHandle.top + startHandle.height / 2 - workflowAreaRect.top;
-
-        const x2 = event.clientX - workflowAreaRect.left;
-        const y2 = event.clientY - workflowAreaRect.top;
-
-        // Calculate the top-left corner of the SVG element
-        const svgLeft = Math.min(x1, x2);
-        const svgTop = Math.min(y1, y2);
-
-        // Update SVG element dimensions and position
-        temporaryLine.style.left = `${svgLeft}px`;
-        temporaryLine.style.top = `${svgTop}px`;
-        temporaryLine.setAttribute('width', Math.abs(x2 - x1));
-        temporaryLine.setAttribute('height', Math.abs(y2 - y1));
-
-        // Update line coordinates
-        const path = temporaryLine.querySelector('line');
-        path.setAttribute('x1', x1 < x2 ? 0 : Math.abs(x2 - x1));
-        path.setAttribute('y1', y1 < y2 ? 0 : Math.abs(y2 - y1));
-        path.setAttribute('x2', x1 < x2 ? Math.abs(x2 - x1) : 0);
-        path.setAttribute('y2', y1 < y2 ? Math.abs(y2 - y1) : 0);
-
+        const workflowRect = workflowArea.getBoundingClientRect();
+        
+        // Get the handle that started the connection
+        const handle = document.getElementById(connectStart.blockId).querySelector(`.handle.${connectStart.handleType}`);
+        const handleRect = handle.getBoundingClientRect();
+        
+        // Calculate handle center position relative to workflow area
+        const handleX = handleRect.left + handleRect.width/2 - workflowRect.left;
+        const handleY = handleRect.top + handleRect.height/2 - workflowRect.top;
+        
+        // Calculate mouse position relative to workflow area
+        const mouseX = event.clientX - workflowRect.left;
+        const mouseY = event.clientY - workflowRect.top;
+        
+        // Determine which is the start point and which is the end point
+        // For left handles, the connection goes from mouse to handle
+        // For right handles, the connection goes from handle to mouse
+        const x1 = connectStart.handleType === 'left' ? mouseX : handleX;
+        const y1 = connectStart.handleType === 'left' ? mouseY : handleY;
+        const x2 = connectStart.handleType === 'left' ? handleX : mouseX;
+        const y2 = connectStart.handleType === 'left' ? handleY : mouseY;
+        
+        // Position and size the SVG element to contain the line
+        const minX = Math.min(x1, x2) - 5; // Add a small buffer
+        const minY = Math.min(y1, y2) - 5;
+        const width = Math.abs(x2 - x1) + 10; // Add padding for visibility
+        const height = Math.abs(y2 - y1) + 10;
+        
+        // Ensure SVG is always visible with reasonable minimum dimensions
+        const minDimension = 20; // Increased for better visibility
+        const svgWidth = Math.max(width, minDimension);
+        const svgHeight = Math.max(height, minDimension);
+        
+        temporaryLine.style.left = `${minX}px`;
+        temporaryLine.style.top = `${minY}px`;
+        temporaryLine.style.width = `${svgWidth}px`;
+        temporaryLine.style.height = `${svgHeight}px`;
+        
+        // Update line coordinates within the SVG
+        const line = temporaryLine.querySelector('line');
+        line.setAttribute('x1', x1 - minX);
+        line.setAttribute('y1', y1 - minY);
+        line.setAttribute('x2', x2 - minX);
+        line.setAttribute('y2', y2 - minY);
     } else {
         // Block dragging
         if (dragTarget) {
@@ -97,7 +109,6 @@ function doDrag(event) {
             dragTarget.style.top = `${y}px`;
             updateConnections(workflowArea); // Update connections when dragging
         }
-
     }
 }
 
@@ -135,20 +146,53 @@ function endDrag(event) {
                     const target = connectStart.handleType === 'right' ? targetBlock.id : connectStart.blockId;
 
                     if (validateConnection(source, target)) {
-                        window.connections.push({ source, target }); // Corrected
+                        window.connections.push({ source, target });
                         updateConnections(workflowArea); // Redraw
+                        
+                        // Add visual feedback for successful connection
+                        const sourceBlock = document.getElementById(source);
+                        const targetBlock = document.getElementById(target);
+                        
+                        // Enhanced visual feedback with inline styles to ensure it works
+                        [sourceBlock, targetBlock].forEach(block => {
+                            block.classList.add('connection-flash');
+                            
+                            // Backup with direct styling in case the CSS animation isn't working
+                            const originalBoxShadow = block.style.boxShadow;
+                            block.style.boxShadow = '8px 8px 0px #06d6a0';
+                            
+                            setTimeout(() => {
+                                block.classList.remove('connection-flash');
+                                block.style.boxShadow = originalBoxShadow;
+                            }, 500);
+                        });
                     } else {
                         const statusDisplay = targetBlock.querySelector('.connection-status');
                         statusDisplay.textContent = 'Cyclic connection detected!';
                         statusDisplay.classList.add('visible');
-                        setTimeout(() => statusDisplay.classList.remove('visible'), 2000);
+                        
+                        // Ensure visibility with inline styles
+                        statusDisplay.style.opacity = '1';
+                        statusDisplay.style.display = 'block';
+                        
+                        setTimeout(() => {
+                            statusDisplay.classList.remove('visible');
+                            statusDisplay.style.opacity = '0';
+                        }, 2000);
                     }
-
                 } else {
                     const statusDisplay = targetBlock.querySelector('.connection-status');
                     statusDisplay.textContent = 'Connection already exists!';
                     statusDisplay.classList.add('visible');
-                    setTimeout(() => statusDisplay.classList.remove('visible'), 2000);
+                    
+                    // Ensure visibility with inline styles
+                    statusDisplay.style.opacity = '1';
+                    statusDisplay.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        statusDisplay.classList.remove('visible');
+                        statusDisplay.style.opacity = '0';
+                    }, 2000);
                 }
             }
         }

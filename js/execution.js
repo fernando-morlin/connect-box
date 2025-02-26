@@ -118,10 +118,23 @@ async function executeWorkflow(workflowArea) {
             try {
                 const result = await executeInstruction(content, input, imageData);
                 output = result;
-                executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
                 
                 // Find outgoing text blocks and update their content
                 const outgoingConnections = window.connections.filter(conn => conn.source === currentBlockId);
+                const hasTextBlockTarget = outgoingConnections.some(conn => {
+                    const targetBlock = document.getElementById(conn.target);
+                    return targetBlock && targetBlock.classList.contains('text-block');
+                });
+                
+                // Only show the result in execution area if not sending to a text block
+                if (!hasTextBlockTarget) {
+                    executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Instruction: ${content}<br><br>Result: ${result}</p>`;
+                } else {
+                    // Just show that the instruction was executed without showing the result at all
+                    executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Instruction: ${content}<br><br>[Result sent to connected text block]</p>`;
+                }
+                
+                // Update text blocks with the result
                 for (const connection of outgoingConnections) {
                     const targetBlock = document.getElementById(connection.target);
                     if (targetBlock && targetBlock.classList.contains('text-block')) {
@@ -263,10 +276,23 @@ async function executeFromBlock(startBlockId) {
             try {
                 const result = await executeInstruction(content, blockInput, blockImageData);
                 output = result;
-                executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
                 
-                // Add this section to update outgoing text blocks
+                // Find outgoing text blocks and update their content
                 const outgoingConnections = window.connections.filter(conn => conn.source === currentBlockId);
+                const hasTextBlockTarget = outgoingConnections.some(conn => {
+                    const targetBlock = document.getElementById(conn.target);
+                    return targetBlock && targetBlock.classList.contains('text-block');
+                });
+                
+                // Only show the result in execution area if not sending to a text block
+                if (!hasTextBlockTarget) {
+                    executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Instruction: ${content}<br><br>Result: ${result}</p>`;
+                } else {
+                    // Just show that the instruction was executed without showing the result at all
+                    executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Instruction: ${content}<br><br>[Result sent to connected text block]</p>`;
+                }
+                
+                // Update text blocks with the result
                 for (const connection of outgoingConnections) {
                     const targetBlock = document.getElementById(connection.target);
                     if (targetBlock && targetBlock.classList.contains('text-block')) {
