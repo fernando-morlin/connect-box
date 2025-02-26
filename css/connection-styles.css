@@ -3,14 +3,14 @@
 /* Ensure the temporary connection is visibly distinct */
 .temporary-connection {
     pointer-events: none; /* Allow mouse events to pass through */
-    z-index: 1000 !important; /* Higher z-index to ensure visibility */
+    z-index: 1000; /* Higher z-index to ensure visibility */
 }
 
 .temporary-connection line {
-    stroke-dasharray: 8,4 !important; /* More visible dash pattern */
-    stroke: #06d6a0 !important; /* Bright green */
-    stroke-width: 4px !important;
-    animation: dash 1s linear infinite !important;
+    stroke-dasharray: 8,4; /* More visible dash pattern */
+    stroke: #06d6a0; /* Bright green */
+    stroke-width: 4px;
+    animation: dash 1s linear infinite;
 }
 
 @keyframes dash {
@@ -21,35 +21,35 @@
 
 /* Ensure flash animation is visible */
 .connection-flash {
-    animation: flash-border 0.5s ease-in-out !important;
+    animation: flash-border 0.5s ease-in-out;
 }
 
 @keyframes flash-border {
-    0% { box-shadow: 8px 8px 0px #000 !important; }
-    50% { box-shadow: 8px 8px 0px #06d6a0 !important; }
-    100% { box-shadow: 8px 8px 0px #000 !important; }
+    0% { box-shadow: 8px 8px 0px #000; }
+    50% { box-shadow: 8px 8px 0px #06d6a0; }
+    100% { box-shadow: 8px 8px 0px #000; }
 }
 
 /* Make connection status more visible */
 .connection-status {
-    position: absolute !important;
-    bottom: -30px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    background-color: #ef476f !important;
-    color: white !important;
-    padding: 5px 10px !important;
-    border: 3px solid #000 !important;
-    box-shadow: 4px 4px 0px #000 !important;
-    opacity: 0 !important;
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ef476f;
+    color: white;
+    padding: 5px 10px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0px #000;
+    opacity: 0;
     display: none;
-    pointer-events: none !important;
-    font-weight: bold !important;
-    z-index: 1000 !important;
-    transition: opacity 0.3s !important;
+    pointer-events: none;
+    font-weight: bold;
+    z-index: 1000;
+    transition: opacity 0.3s;
 }
 
 .connection-status.visible {
-    opacity: 1 !important;
-    display: block !important;
+    opacity: 1;
+    display: block;
 }
