@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
         createBlock('instruction', 300, 50, workflowArea);
     });
 
+    addImageBtn.addEventListener('click', () => {
+        createBlock('image', 150, 50, workflowArea);
+    });
+
     executeBtn.addEventListener('click', () => {
         executeWorkflow(workflowArea);
     });
