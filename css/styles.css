@@ -600,3 +600,26 @@ option {
     transform: translateY(2px);
     box-shadow: 1px 1px 0px #000;
 }
+
+/* Block-specific save settings button */
+[id^="save-settings-"] {
+    background-color: #118ab2;
+    border: 3px solid #000;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    box-shadow: 4px 4px 0px #000;
+    font-family: 'Courier New', monospace;
+}
+
+[id^="save-settings-"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0px #000;
+}
+
+[id^="save-settings-"]:active {
+    transform: translateY(2px);
+    box-shadow: 2px 2px 0px #000;
+}
