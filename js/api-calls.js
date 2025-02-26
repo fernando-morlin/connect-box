@@ -44,10 +44,54 @@ async function callGeminiAPI(prompt, imageData = null) {
 }
 
 // Function to call OpenRouter API
-async function callOpenRouterAPI(prompt) {
-     const { openrouterApiKey, openrouterModel } = getSettings();
+async function callOpenRouterAPI(prompt, imageData = null) {
+    const { openrouterApiKey, openrouterModel } = getSettings();
     if (!openrouterApiKey) {
         throw new Error('OpenRouter API key not configured. Please set it in settings.');
+    }
+
+    // List of vision-capable models in OpenRouter
+    const visionModels = [
+        "google/gemini-2.0-flash-lite-preview-02-05",
+        "google/gemini-2.0-flash-exp",
+        "google/gemini-2.0-pro-exp-02-05",
+        "google/gemini-2.0-flash-thinking-exp-1219",
+        "google/gemini-2.0-flash-thinking-exp",
+        "google/gemini-exp-1206",
+        "meta-llama/llama-3.2-11b-vision-instruct",
+        "qwen/qwen2.5-vl-72b-instruct",
+        "qwen/qwen-vl-plus"
+    ];
+
+    // Create the message content
+    let messages = [];
+    
+    // If we have image data and the selected model supports vision
+    if (imageData && visionModels.some(model => openrouterModel.includes(model))) {
+        // Extract the base64 data without the prefix for OpenRouter
+        const base64Image = imageData.split(',')[1]; // Remove the data:image/jpeg;base64, prefix
+        
+        messages = [
+            { 
+                role: "user", 
+                content: [
+                    {
+                        type: "text",
+                        text: prompt
+                    },
+                    {
+                        type: "image_url",
+                        image_url: {
+                            url: `data:image/jpeg;base64,${base64Image}`
+                        }
+                    }
+                ]
+            }
+        ];
+    } else {
+        messages = [
+            { role: "user", content: prompt }
+        ];
     }
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -59,13 +103,13 @@ async function callOpenRouterAPI(prompt) {
         },
         body: JSON.stringify({
             model: openrouterModel,
-            messages: [
-                { role: "user", content: prompt }
-            ]
+            messages: messages
         })
     });
 
     if (!response.ok) {
+        const errorText = await response.text();
+        console.error("OpenRouter API error:", errorText);
         throw new Error(`OpenRouter API call failed: ${response.statusText}`);
     }
 
@@ -85,8 +129,8 @@ async function executeInstruction(content, input, imageData = null) {
             const result = await callGeminiAPI(prompt, imageData);
             return result;
         } else {
-            // OpenRouter doesn't support images in this implementation
-            const result = await callOpenRouterAPI(prompt);
+            // OpenRouter now supports images for compatible models
+            const result = await callOpenRouterAPI(prompt, imageData);
             return result;
         }
     } catch (error) {
