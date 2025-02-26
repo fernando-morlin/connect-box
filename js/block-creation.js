@@ -106,9 +106,6 @@ function createBlock(type, x, y, workflowArea) {
             gearButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 
-                // Remove debug alert
-                // alert(`Gear button clicked on block ${block.id}`);
-                
                 // Show block-specific settings modal
                 showBlockSettings(block.id);
             });
