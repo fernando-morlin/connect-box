@@ -569,3 +569,34 @@ option {
 .add-image {
     background-color: #9b4dca;
 }
+
+/* Gear button for instruction blocks */
+.gear-button {
+    position: absolute;
+    top: 5px;
+    right: 75px; /* Position between play (40px) and delete (5px) buttons */
+    background-color: #ffd166; /* Yellow color to make it distinct */
+    color: black;
+    border: 3px solid #000;
+    border-radius: 0px; /* Square corners for brutalist style */
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 3;
+    box-shadow: 3px 3px 0px #000; /* Neo-brutalist shadow */
+}
+
+.gear-button:hover {
+    transform: translateY(-2px); /* Removed the rotate effect to match other buttons */
+    box-shadow: 5px 5px 0px #000;
+}
+
+.gear-button:active {
+    transform: translateY(2px);
+    box-shadow: 1px 1px 0px #000;
+}

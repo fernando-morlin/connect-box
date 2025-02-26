@@ -21,6 +21,11 @@ function createBlock(type, x, y, workflowArea) {
         const maxY = workflowArea.clientHeight - 100;
         block.style.left = `${Math.min(Math.max(0, x), maxX)}px`;
         block.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
+        
+        // Increase default width for instruction blocks
+        if (type === 'instruction') {
+            block.style.width = '250px'; // Increased from default
+        }
 
         const label = createElement('div', 'block-label');
         label.textContent = type.charAt(0).toUpperCase() + type.slice(1);
@@ -28,6 +33,7 @@ function createBlock(type, x, y, workflowArea) {
 
         // Create block content based on type
         if (type === 'image') {
+            // Image block code remains unchanged
             const imageInput = createElement('input', '', { 
                 type: 'file', 
                 accept: 'image/*',
@@ -91,6 +97,19 @@ function createBlock(type, x, y, workflowArea) {
                 executeFromBlock(block.id);
             });
             block.appendChild(playButton);
+            
+            // Add the gear button for instruction blocks
+            const gearButton = createElement('button', 'gear-button');
+            gearButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
+            
+            // Add a click event for debugging
+            gearButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                console.log(`Gear button clicked on block ${block.id}`);
+                alert(`Gear button clicked on block ${block.id}`); // Debug visual feedback
+            });
+            
+            block.appendChild(gearButton);
         }
 
         const connectionStatus = createElement('div', 'connection-status');
