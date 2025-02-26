@@ -2,10 +2,29 @@
 import { getSettings } from './settings-handler.js';
 
 // Function to call Gemini API
-async function callGeminiAPI(prompt) {
+async function callGeminiAPI(prompt, imageData = null) {
     const { apiKey, selectedModel } = getSettings();
     if (!apiKey) {
         throw new Error('API key not configured. Please set it in settings.');
+    }
+
+    // Build the request body
+    const requestBody = {
+        contents: [{
+            parts: [{
+                text: prompt
+            }]
+        }]
+    };
+
+    // Add image to the request if provided
+    if (imageData) {
+        requestBody.contents[0].parts.unshift({
+            inline_data: {
+                mime_type: "image/jpeg",
+                data: imageData.split(',')[1] // Remove the data:image/jpeg;base64, prefix
+            }
+        });
     }
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
@@ -13,13 +32,7 @@ async function callGeminiAPI(prompt) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            contents: [{
-                parts: [{
-                    text: prompt
-                }]
-            }]
-        })
+        body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
@@ -61,7 +74,7 @@ async function callOpenRouterAPI(prompt) {
 }
 
 // Unified function to execute instruction (using either Gemini or OpenRouter)
-async function executeInstruction(content, input) {
+async function executeInstruction(content, input, imageData = null) {
     const { apiProvider } = getSettings();
     try {
         // If there's input, combine it with the instruction
@@ -69,9 +82,10 @@ async function executeInstruction(content, input) {
 
         // Use the appropriate API based on user selection
         if (apiProvider === 'gemini') {
-            const result = await callGeminiAPI(prompt);
+            const result = await callGeminiAPI(prompt, imageData);
             return result;
         } else {
+            // OpenRouter doesn't support images in this implementation
             const result = await callOpenRouterAPI(prompt);
             return result;
         }

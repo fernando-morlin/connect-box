@@ -2,6 +2,7 @@
 
 import { executeInstruction } from './api-calls.js';
 
+// Update executeWorkflow function to handle image blocks
 async function executeWorkflow(workflowArea) {
     const executionResultsDiv = document.getElementById('execution-results');
     executionResultsDiv.innerHTML = ''; // Clear previous results
@@ -10,8 +11,9 @@ async function executeWorkflow(workflowArea) {
     // Track which blocks have been processed
     const processedBlocks = new Set();
     
-    // Store input data for blocks
+    // Store input data and images for blocks
     const blockInputs = new Map();
+    const blockImages = new Map();
     
     // Count incoming connections for each block
     const incomingConnectionCount = new Map();
@@ -63,8 +65,25 @@ async function executeWorkflow(workflowArea) {
             continue;
         }
         
-        const type = block.classList.contains('text-block') ? 'Text' : 'Instruction';
-        const content = block.querySelector('textarea').value;
+        // Determine block type
+        const isTextBlock = block.classList.contains('text-block');
+        const isInstructionBlock = block.classList.contains('instruction-block');
+        const isImageBlock = block.classList.contains('image-block');
+        
+        let type = isTextBlock ? 'Text' : (isInstructionBlock ? 'Instruction' : 'Image');
+        
+        // Get content based on block type
+        let content = '';
+        let imageData = null;
+        
+        if (isTextBlock || isInstructionBlock) {
+            content = block.querySelector('textarea').value;
+        } else if (isImageBlock) {
+            const imagePreview = block.querySelector('.image-preview');
+            if (imagePreview && imagePreview.src) {
+                imageData = imagePreview.src;
+            }
+        }
         
         // Get all inputs for this block and combine them
         let input = '';
@@ -77,6 +96,11 @@ async function executeWorkflow(workflowArea) {
             }
         }
         
+        // Also get any image inputs for this block
+        if (blockImages.has(currentBlockId)) {
+            imageData = blockImages.get(currentBlockId);
+        }
+        
         let output = '';
         
         if (type === "Text") {
@@ -87,9 +111,12 @@ async function executeWorkflow(workflowArea) {
                 output = content;
             }
             executionResultsDiv.innerHTML += `<p><span class="result-label">Text (${block.id}):</span> ${output}</p>`;
+        } else if (type === "Image") {
+            output = imageData; // Fixed: was 'utput' which is undeclared
+            executionResultsDiv.innerHTML += `<p><span class="result-label">Image (${block.id}):</span> [Image data available for processing]</p>`;
         } else {
             try {
-                const result = await executeInstruction(content, input);
+                const result = await executeInstruction(content, input, imageData);
                 output = result;
                 executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
                 
@@ -117,16 +144,20 @@ async function executeWorkflow(workflowArea) {
             const targetId = connection.target;
             
             // Store the output for the target block
-            if (!blockInputs.has(targetId)) {
-                blockInputs.set(targetId, []);
-            }
-            
-            // Store inputs consistently as arrays for all blocks
-            const inputs = blockInputs.get(targetId);
-            if (Array.isArray(inputs)) {
-                inputs.push(output);
+            if (type === "Image") {
+                blockImages.set(targetId, output);
             } else {
-                blockInputs.set(targetId, [output]);
+                if (!blockInputs.has(targetId)) {
+                    blockInputs.set(targetId, []);
+                }
+                
+                // Store inputs consistently as arrays for all blocks
+                const inputs = blockInputs.get(targetId);
+                if (Array.isArray(inputs)) {
+                    inputs.push(output);
+                } else {
+                    blockInputs.set(targetId, [output]);
+                }
             }
             
             // Increment the processed input count for this target
@@ -155,16 +186,26 @@ async function executeFromBlock(startBlockId) {
     
     const processedBlocks = new Set();
     const blockInputs = new Map();
+    const blockImages = new Map();
 
     // First, collect inputs from previous blocks without executing them
     const incomingConnections = window.connections.filter(conn => conn.target === startBlockId);
     
     // Gather inputs from all incoming connections
     let inputs = [];
+    let imageData = null;
+    
     for (const conn of incomingConnections) {
         const sourceBlock = document.getElementById(conn.source);
         if (sourceBlock) {
-            inputs.push(sourceBlock.querySelector('textarea').value);
+            if (sourceBlock.classList.contains('image-block')) {
+                const imagePreview = sourceBlock.querySelector('.image-preview');
+                if (imagePreview && imagePreview.src) {
+                    imageData = imagePreview.src;
+                }
+            } else {
+                inputs.push(sourceBlock.querySelector('textarea').value);
+            }
         }
     }
     const input = inputs.join('\n\n');
@@ -180,13 +221,33 @@ async function executeFromBlock(startBlockId) {
         const block = document.getElementById(currentBlockId);
         if (!block) continue;
 
-        const type = block.classList.contains('text-block') ? 'Text' : 'Instruction';
-        const content = block.querySelector('textarea').value;
+        // Determine block type
+        const isTextBlock = block.classList.contains('text-block');
+        const isInstructionBlock = block.classList.contains('instruction-block');
+        const isImageBlock = block.classList.contains('image-block');
+        
+        let type = isTextBlock ? 'Text' : (isInstructionBlock ? 'Instruction' : 'Image');
+        
+        // Get content based on block type
+        let content = '';
+        let currentImageData = null;
+        
+        if (isTextBlock || isInstructionBlock) {
+            content = block.querySelector('textarea').value;
+        } else if (isImageBlock) {
+            const imagePreview = block.querySelector('.image-preview');
+            if (imagePreview && imagePreview.src) {
+                currentImageData = imagePreview.src;
+            }
+        }
         
         // Use collected input for start block, otherwise use previous block's output
         const blockInput = currentBlockId === startBlockId ? input : blockInputs.get(currentBlockId);
+        // For image data, use either the existing image from the current block or from a previous block
+        const blockImageData = currentBlockId === startBlockId ? imageData : (currentImageData || blockImages.get(currentBlockId));
         
         let output = '';
+        
         if (type === "Text") {
             if (blockInput && content.trim() === '') {
                 block.querySelector('textarea').value = blockInput;
@@ -195,9 +256,12 @@ async function executeFromBlock(startBlockId) {
                 output = content;
             }
             executionResultsDiv.innerHTML += `<p><span class="result-label">Text (${block.id}):</span> ${output}</p>`;
+        } else if (type === "Image") {
+            output = blockImageData;
+            executionResultsDiv.innerHTML += `<p><span class="result-label">Image (${block.id}):</span> [Image data available for processing]</p>`;
         } else {
             try {
-                const result = await executeInstruction(content, blockInput);
+                const result = await executeInstruction(content, blockInput, blockImageData);
                 output = result;
                 executionResultsDiv.innerHTML += `<p><span class="result-label">Instruction (${block.id}):</span> Result: ${result}</p>`;
                 
@@ -220,7 +284,11 @@ async function executeFromBlock(startBlockId) {
         // Find next blocks to process
         const outgoingConnections = window.connections.filter(conn => conn.source === currentBlockId);
         for (const conn of outgoingConnections) {
-            blockInputs.set(conn.target, output);
+            if (type === "Image") {
+                blockImages.set(conn.target, output);
+            } else {
+                blockInputs.set(conn.target, output);
+            }
             blocksToProcess.push(conn.target);
         }
     }
