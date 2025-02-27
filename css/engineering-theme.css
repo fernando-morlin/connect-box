@@ -1,0 +1,275 @@
+/* css/engineering-theme.css */
+
+/* Apply styles only when .engineering-theme class is on body */
+body.engineering-theme {
+    background-color: #EAE8DC;
+}
+
+body.engineering-theme #sidebar {
+    background-color: #2E2E2E;
+    border-right: 3px solid #1B3B4B;
+}
+
+body.engineering-theme #sidebar button {
+    background-color: #3A6F62;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px #1B3B4B;
+    transform: none;
+    color: #EAE8DC;
+}
+
+body.engineering-theme #sidebar button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 4px 4px 0px #1B3B4B !important;
+    background-color: inherit; /* Keep button's own color */
+}
+
+body.engineering-theme #sidebar button:active {
+    transform: translateY(2px) !important;
+    box-shadow: 1px 1px 0px #1B3B4B !important;
+}
+
+body.engineering-theme #sidebar button.add-text,
+body.engineering-theme #sidebar button.add-instruction { 
+    background-color: #3A6F62; 
+    transform: none; /* Remove any rotation */
+    box-shadow: 3px 3px 0px #1B3B4B;
+}
+
+body.engineering-theme #sidebar button.add-image { 
+    background-color: #3A6F62 !important; /* Use !important to override specificity issues */
+    transform: none; /* Remove any rotation */
+    box-shadow: 3px 3px 0px #1B3B4B;
+}
+
+body.engineering-theme #sidebar button.settings,
+body.engineering-theme #sidebar button.execute { 
+    background-color: #1B3B4B; 
+    transform: none; /* Remove any rotation */
+    box-shadow: 3px 3px 0px #1B3B4B;
+}
+
+body.engineering-theme #sidebar button.theme-toggle {
+    background-color: #1B3B4B;
+}
+
+body.engineering-theme #workflow-area {
+    background-color: #EAE8DC;
+    background-image: 
+        linear-gradient(#c5c3b8 1px, transparent 1px),
+        linear-gradient(90deg, #c5c3b8 1px, transparent 1px);
+}
+
+body.engineering-theme .block {
+    border: 3px solid #1B3B4B;
+    box-shadow: 5px 5px 0px rgba(27, 59, 75, 0.5);
+    transform: none;
+}
+
+body.engineering-theme .text-block {
+    background-color: rgba(58, 111, 98, 0.1);
+}
+
+body.engineering-theme .instruction-block {
+    background-color: rgba(27, 59, 75, 0.1);
+}
+
+body.engineering-theme .image-block {
+    background-color: rgba(27, 59, 75, 0.2);
+}
+
+body.engineering-theme .block textarea {
+    border: 2px solid #1B3B4B;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+body.engineering-theme .block-label {
+    color: #1B3B4B;
+}
+
+body.engineering-theme .handle {
+    border: 2px solid #1B3B4B;
+}
+
+body.engineering-theme .handle.left {
+    background-color: #3A6F62;
+}
+
+body.engineering-theme .handle.right {
+    background-color: #1B3B4B;
+}
+
+body.engineering-theme .connection-line line {
+    stroke: #1B3B4B;
+    stroke-width: 3;
+}
+
+body.engineering-theme .delete-button,
+body.engineering-theme .play-button,
+body.engineering-theme .gear-button {
+    border: 2px solid #1B3B4B;
+    box-shadow: 2px 2px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .delete-button {
+    background-color: #1B3B4B;
+    color: #EAE8DC;
+}
+
+body.engineering-theme .play-button {
+    background-color: #3A6F62;
+    color: #EAE8DC;
+}
+
+body.engineering-theme .gear-button {
+    background-color: #2E2E2E;
+    color: #EAE8DC;
+}
+
+body.engineering-theme .delete-button:hover,
+body.engineering-theme .play-button:hover,
+body.engineering-theme .gear-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .delete-button:active,
+body.engineering-theme .play-button:active,
+body.engineering-theme .gear-button:active {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme #execution-results {
+    border: 3px solid #1B3B4B;
+    background-color: white;
+    box-shadow: 4px 4px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme #execution-results p {
+    color: #2E2E2E;
+}
+
+body.engineering-theme .modal-content {
+    background-color: white;
+    border: 3px solid #1B3B4B;
+    box-shadow: 5px 5px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .form-group input,
+body.engineering-theme .form-group select {
+    border: 2px solid #1B3B4B;
+    background-color: #EAE8DC;
+}
+
+body.engineering-theme .form-group select {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%231B3B4B' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+body.engineering-theme .form-group select option {
+    background-color: #EAE8DC;
+    border-bottom: 1px solid #1B3B4B;
+}
+
+body.engineering-theme .form-group input:focus,
+body.engineering-theme .form-group select:focus {
+    border-color: #3A6F62;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.3);
+}
+
+body.engineering-theme .form-group label {
+    color: #1B3B4B;
+}
+
+body.engineering-theme #save-settings,
+body.engineering-theme [id^="save-settings-"] {
+    background-color: #3A6F62;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .resize-handle {
+    background-color: #1B3B4B;
+}
+
+body.engineering-theme .resize-handle:hover {
+    background-color: #3A6F62;
+}
+
+body.engineering-theme .result-label {
+    background-color: #3A6F62;
+    color: white;
+    border: 2px solid #1B3B4B;
+    box-shadow: 2px 2px 0px rgba(27, 59, 75, 0.5);
+    transform: none;
+}
+
+body.engineering-theme #results-toggle {
+    background-color: #1B3B4B;
+    color: white;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+    transform: none;
+}
+
+body.engineering-theme .image-block input[type="file"] + label {
+    background-color: #3A6F62;
+    color: white;
+    border: 2px solid #1B3B4B;
+    box-shadow: 2px 2px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .image-preview {
+    border: 2px solid #1B3B4B;
+}
+
+body.engineering-theme .zoom-controls {
+    background-color: white;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .zoom-btn {
+    background-color: #3A6F62;
+    color: white;
+    border: 2px solid #1B3B4B;
+    box-shadow: 2px 2px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .zoom-level {
+    color: #1B3B4B;
+}
+
+body.engineering-theme .modal {
+    background-color: rgba(46, 46, 46, 0.7);
+}
+
+/* Connection styles for engineering theme */
+body.engineering-theme .temporary-connection line {
+    stroke: #3A6F62;
+    stroke-width: 3px;
+}
+
+body.engineering-theme .connection-flash {
+    animation: engineering-flash-border 0.5s ease-in-out;
+}
+
+@keyframes engineering-flash-border {
+    0% { box-shadow: 5px 5px 0px rgba(27, 59, 75, 0.5); }
+    50% { box-shadow: 5px 5px 0px rgba(58, 111, 98, 0.8); }
+    100% { box-shadow: 5px 5px 0px rgba(27, 59, 75, 0.5); }
+}
+
+body.engineering-theme .connection-status {
+    background-color: #1B3B4B;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+/* Responsive styles specific to engineering theme */
+@media (max-width: 768px) {
+    body.engineering-theme #sidebar {
+        border-bottom: 2px solid #1B3B4B;
+        border-right: none;
+    }
+}

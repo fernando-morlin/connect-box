@@ -5,6 +5,7 @@ body {
     display: flex;
     height: 100vh;
     background-color: #f0f0f0;
+    transition: background-color 0.3s ease;
 }
 
 #sidebar {
@@ -16,6 +17,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 #sidebar button {
@@ -24,7 +26,7 @@ body {
     padding: 12px;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -50,6 +52,27 @@ body {
 #sidebar button.execute { background-color: #ef476f; color: #000; }
 #sidebar button.add-image { background-color: #9b4dca !important; /* Match image block color */ }
 
+/* Theme toggle button */
+#sidebar button.theme-toggle {
+    background-color: #118ab2;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.3s;
+}
+
+#sidebar button.theme-toggle:hover {
+    background-color: #0d6e91;
+}
+
+body.engineering-theme #sidebar button.theme-toggle {
+    background-color: #1B3B4B;
+    transition: background-color 0.3s;
+}
+
+body.engineering-theme #sidebar button.theme-toggle:hover {
+    background-color: #3A6F62;
+}
+
 #workflow-area {
     flex: 1;
     padding: 20px;
@@ -61,6 +84,7 @@ body {
     position: relative;
     overflow: auto;
     cursor: default;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 #workflow-area.panning {
@@ -80,6 +104,7 @@ body {
     user-select: none;
     box-sizing: border-box;
     transform: rotate(-0.5deg); /* Slight tilt */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .text-block {
@@ -123,6 +148,7 @@ body {
     z-index: 2;
     border: 3px solid #000;
     transform: none; /* Remove diamond rotation */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .handle.left {
@@ -311,6 +337,7 @@ select::-ms-expand {
     background-color: #000;
     cursor: nwse-resize;
     z-index: 3;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Add these styles to the existing CSS */
