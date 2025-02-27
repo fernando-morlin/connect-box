@@ -78,27 +78,53 @@ function updateConnections(workflowArea) {
             svg.setAttribute("class", "connection-line");
             svg.style.position = "absolute";
             
-            const minDimension = 10;
-            const width = Math.max(Math.abs(targetX - sourceX), minDimension);
-            const height = Math.max(Math.abs(targetY - sourceY), minDimension);
-            
-            const left = Math.min(sourceX, targetX) - (width === minDimension ? minDimension/2 : 0);
-            const top = Math.min(sourceY, targetY) - (height === minDimension ? minDimension/2 : 0);
+            // Define bounds that contain both points with padding
+            const padding = 50; // Padding to accommodate curve control points
+            const left = Math.min(sourceX, targetX) - padding;
+            const top = Math.min(sourceY, targetY) - padding;
+            const width = Math.abs(targetX - sourceX) + (padding * 2);
+            const height = Math.abs(targetY - sourceY) + (padding * 2);
             
             svg.style.left = left + "px";
             svg.style.top = top + "px";
             svg.style.width = width + "px";
             svg.style.height = height + "px";
-
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", sourceX < targetX ? 0 : width);
-            line.setAttribute("y1", sourceY < targetY ? 0 : height);
-            line.setAttribute("x2", sourceX < targetX ? width : 0);
-            line.setAttribute("y2", sourceY < targetY ? height : 0);
-            line.setAttribute("stroke", "#000");
-            line.setAttribute("stroke-width", "4");
-
-            svg.appendChild(line);
+            
+            // Calculate relative coordinates within the SVG viewbox
+            const relSourceX = sourceX - left;
+            const relSourceY = sourceY - top;
+            const relTargetX = targetX - left;
+            const relTargetY = targetY - top;
+            
+            // Create curved path 
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            // Calculate control points for the curve
+            // Control point distance: 1/3 of the horizontal distance between points
+            const distance = Math.abs(relTargetX - relSourceX) / 3;
+            
+            // Define path using cubic bezier curve
+            const d = `M ${relSourceX} ${relSourceY} 
+                      C ${relSourceX + distance} ${relSourceY},
+                        ${relTargetX - distance} ${relTargetY},
+                        ${relTargetX} ${relTargetY}`;
+            
+            path.setAttribute("d", d);
+            path.setAttribute("fill", "none");
+            
+            // Check if we're in engineering theme
+            const isEngineeringTheme = document.body.classList.contains('engineering-theme');
+            
+            // Apply appropriate styling based on theme
+            if (isEngineeringTheme) {
+                path.setAttribute("stroke", "#1B3B4B");
+                path.setAttribute("stroke-width", "3");
+            } else {
+                path.setAttribute("stroke", "#000");
+                path.setAttribute("stroke-width", "4");
+            }
+            
+            svg.appendChild(path);
             connectionsContainer.appendChild(svg);
         }
     });

@@ -30,19 +30,27 @@ function startDrag(event) {
             handleType: event.target.classList.contains('left') ? 'left' : 'right'
         };
         
-        // Create SVG element for the temporary connection line with a distinctive style
+        // Create SVG element for the temporary connection
         temporaryLine = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         temporaryLine.classList.add('connection-line', 'temporary-connection');
         temporaryLine.style.position = "absolute";
-        temporaryLine.style.zIndex = "1000"; // Higher z-index to ensure visibility
-        
-        // Create the line element inside SVG with emphasized styling
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("stroke", "#06d6a0"); // Use a bright green color for visibility
-        line.setAttribute("stroke-width", "4");
-        line.setAttribute("stroke-dasharray", "8,4"); // More visible dash pattern
-        
-        temporaryLine.appendChild(line);
+        temporaryLine.style.zIndex = "1000";
+
+        // Create the path element inside SVG (instead of a line)
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke-dasharray", "8,4");
+
+        // Apply theme-specific styling
+        if (document.body.classList.contains('engineering-theme')) {
+            path.setAttribute("stroke", "#3A6F62");
+            path.setAttribute("stroke-width", "3");
+        } else {
+            path.setAttribute("stroke", "#06d6a0");
+            path.setAttribute("stroke-width", "4");
+        }
+
+        temporaryLine.appendChild(path);
         workflowContent.appendChild(temporaryLine);
 
         event.preventDefault(); // Prevent text selection during drag
@@ -65,6 +73,7 @@ function doDrag(event) {
     // Get current zoom level
     const zoomFactor = getCurrentZoom();
 
+    // Updated code for the temporaryLine in doDrag function in js/block-dragging.js
     if (isConnecting && temporaryLine) {
         const workflowRect = workflowContent.getBoundingClientRect();
         
@@ -86,27 +95,66 @@ function doDrag(event) {
         const x2 = connectStart.handleType === 'left' ? handleX : mouseX;
         const y2 = connectStart.handleType === 'left' ? handleY : mouseY;
         
-        // Position and size the SVG element to contain the line
-        const minX = Math.min(x1, x2) - 5; 
-        const minY = Math.min(y1, y2) - 5;
-        const width = Math.abs(x2 - x1) + 10; 
-        const height = Math.abs(y2 - y1) + 10;
+        // Add padding for the control points
+        const padding = 50;
+        const minX = Math.min(x1, x2) - padding; 
+        const minY = Math.min(y1, y2) - padding;
+        const width = Math.abs(x2 - x1) + (padding * 2); 
+        const height = Math.abs(y2 - y1) + (padding * 2);
         
         const minDimension = 20;
         const svgWidth = Math.max(width, minDimension);
         const svgHeight = Math.max(height, minDimension);
         
+        // Position the SVG
         temporaryLine.style.left = `${minX}px`;
         temporaryLine.style.top = `${minY}px`;
         temporaryLine.style.width = `${svgWidth}px`;
         temporaryLine.style.height = `${svgHeight}px`;
         
-        // Update line coordinates within the SVG
-        const line = temporaryLine.querySelector('line');
-        line.setAttribute('x1', x1 - minX);
-        line.setAttribute('y1', y1 - minY);
-        line.setAttribute('x2', x2 - minX);
-        line.setAttribute('y2', y2 - minY);
+        // Calculate relative coordinates within the SVG
+        const relX1 = x1 - minX;
+        const relY1 = y1 - minY;
+        const relX2 = x2 - minX;
+        const relY2 = y2 - minY;
+        
+        // Calculate control points for the curve
+        // Control point distance: 1/3 of the horizontal distance between points
+        const distance = Math.abs(relX2 - relX1) / 3;
+        
+        // Update or create the path element
+        let path = temporaryLine.querySelector('path');
+        if (!path) {
+            // Remove the line if it exists
+            const line = temporaryLine.querySelector('line');
+            if (line) {
+                line.remove();
+            }
+            
+            // Create a path element
+            path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("fill", "none");
+            temporaryLine.appendChild(path);
+        }
+        
+        // Define curved path using cubic bezier
+        const d = `M ${relX1} ${relY1} 
+                  C ${relX1 + distance} ${relY1},
+                    ${relX2 - distance} ${relY2},
+                    ${relX2} ${relY2}`;
+        
+        path.setAttribute("d", d);
+        
+        // Apply styling based on theme
+        if (document.body.classList.contains('engineering-theme')) {
+            path.setAttribute("stroke", "#3A6F62");
+            path.setAttribute("stroke-width", "3");
+            path.setAttribute("stroke-dasharray", "8,4");
+        } else {
+            path.setAttribute("stroke", "#06d6a0");
+            path.setAttribute("stroke-width", "4");
+            path.setAttribute("stroke-dasharray", "8,4");
+        }
     } else {
         // Block dragging
         if (dragTarget) {
