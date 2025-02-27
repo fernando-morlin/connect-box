@@ -7,6 +7,11 @@ const zoomStep = 0.1; // 10% zoom step
 const minZoom = 0.3; // 30% minimum zoom
 const maxZoom = 3;   // 300% maximum zoom
 
+// Track panning state
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+
 // Initialize zoom controls
 function initializeZoom(workflowArea) {
     // Create zoom controls
@@ -60,6 +65,47 @@ function initializeZoom(workflowArea) {
             }
         }
     });
+    
+    // Add middle mouse button panning
+    const workflowContent = workflowArea.querySelector('.workflow-content');
+    
+    workflowArea.addEventListener('mousedown', (e) => {
+        // Check if it's middle mouse button (button 1)
+        if (e.button === 1) {
+            e.preventDefault();
+            isPanning = true;
+            panStartX = e.clientX;
+            panStartY = e.clientY;
+            workflowArea.style.cursor = 'grabbing';
+        }
+    });
+    
+    workflowArea.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            e.preventDefault();
+            const dx = e.clientX - panStartX;
+            const dy = e.clientY - panStartY;
+            
+            // Apply the pan by scrolling the workflow area
+            workflowArea.scrollLeft -= dx;
+            workflowArea.scrollTop -= dy;
+            
+            // Update pan start position for next move
+            panStartX = e.clientX;
+            panStartY = e.clientY;
+        }
+    });
+    
+    // End panning on mouse up or mouse leave
+    const endPan = () => {
+        if (isPanning) {
+            isPanning = false;
+            workflowArea.style.cursor = 'default';
+        }
+    };
+    
+    workflowArea.addEventListener('mouseup', endPan);
+    workflowArea.addEventListener('mouseleave', endPan);
 }
 
 // Zoom in function
