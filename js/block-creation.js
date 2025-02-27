@@ -6,7 +6,7 @@ import { executeFromBlock } from './execution.js';
 
 let blockCount = 0;
 
-function createBlock(type, x, y, workflowArea) {
+function createBlock(type, x, y, workflowContent) {
     try {
         if (!['text', 'instruction', 'image'].includes(type)) {
             throw new Error('Invalid block type');
@@ -17,8 +17,8 @@ function createBlock(type, x, y, workflowArea) {
         block.id = `${type}-${blockCount}`;
 
         // Position block
-        const maxX = workflowArea.clientWidth - 200;
-        const maxY = workflowArea.clientHeight - 100;
+        const maxX = workflowContent.clientWidth - 200;
+        const maxY = workflowContent.clientHeight - 100;
         block.style.left = `${Math.min(Math.max(0, x), maxX)}px`;
         block.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
         
@@ -80,7 +80,7 @@ function createBlock(type, x, y, workflowArea) {
         deleteButton.textContent = 'x';
         deleteButton.addEventListener('click', (event) => {
             event.stopPropagation();
-            deleteBlock(block.id, workflowArea);
+            deleteBlock(block.id, workflowContent);
         });
         block.appendChild(deleteButton);
 
@@ -120,7 +120,7 @@ function createBlock(type, x, y, workflowArea) {
         block.addEventListener('mousedown', startDrag);
         resizeHandle.addEventListener('mousedown', startResize);
 
-        workflowArea.appendChild(block);
+        workflowContent.appendChild(block);
         return block;
     } catch (error) {
         console.error('Error creating block:', error);

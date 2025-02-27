@@ -185,6 +185,7 @@ body {
     box-shadow: 1px 1px 0px #000;
 }
 
+/* Update execution results positioning */
 #execution-results {
     margin-top: 20px;
     padding: 15px;
@@ -193,6 +194,16 @@ body {
     display: none;
     box-shadow: 6px 6px 0px #000;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+    position: fixed;
+    bottom: 100px; /* Increased to avoid overlap with zoom controls */
+    left: 120px;
+    right: 20px;
+    z-index: 1001; /* Above the workflow content */
+    transform: none !important; /* Ensure no transform is applied */
+    font-size: 14px; /* Reduced font size from default */
+    max-height: 250px; /* Slightly reduced height */
+    overflow-y: auto;
 }
 
 #execution-results.visible {
@@ -460,16 +471,16 @@ option {
 
 #execution-results p {
     margin-bottom: 15px;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 #results-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: fixed;
+    bottom: 90px; /* Position above zoom controls (which is at bottom: 20px) */
+    right: 46px; /* Keep it aligned with the right edge */
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    padding: 8px 16px;
+    padding: 8px 18px;
     background-color: #118ab2;
     color: white;
     border: 3px solid #000;
@@ -477,7 +488,7 @@ option {
     cursor: pointer;
     box-shadow: 4px 4px 0px #000;
     transform: rotate(-0.5deg);
-    z-index: 100;  /* Increased z-index to ensure button stays on top */
+    z-index: 1002; /* Same or higher than zoom controls */
     transition: all 0.2s;
 }
 
@@ -622,4 +633,62 @@ option {
 [id^="save-settings-"]:active {
     transform: translateY(2px);
     box-shadow: 2px 2px 0px #000;
+}
+
+/* Update zoom controls positioning */
+.zoom-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 3px solid #000;
+    padding: 8px;
+    box-shadow: 4px 4px 0px #000;
+    z-index: 1002; /* Set higher than execution results */
+}
+
+.zoom-btn {
+    background-color: #118ab2;
+    color: white;
+    border: 2px solid #000;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 2px 2px 0px #000;
+}
+
+.zoom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0px #000;
+}
+
+.zoom-btn:active {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 0px #000;
+}
+
+.zoom-level {
+    margin: 0 10px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    user-select: none;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Add a wrapper for the workflow content to handle zoom */
+.workflow-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: top left;
+    transition: transform 0.2s ease;
 }

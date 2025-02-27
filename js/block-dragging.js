@@ -1,6 +1,7 @@
 // js/block-dragging.js
 import { createElement } from './utils.js';
 import { updateConnections, validateConnection } from './block-connection.js';
+import { getCurrentZoom } from './zoom-handler.js'; // Import zoom functionality
 
 let isDragging = false;
 let isConnecting = false;
@@ -17,6 +18,8 @@ function startDrag(event) {
     }
     
     const workflowArea = document.getElementById('workflow-area');
+    const workflowContent = workflowArea.querySelector('.workflow-content');
+    
     isDragging = true;
     dragTarget = event.target.closest('.block'); // Find the closest parent with class 'block'
 
@@ -40,52 +43,56 @@ function startDrag(event) {
         line.setAttribute("stroke-dasharray", "8,4"); // More visible dash pattern
         
         temporaryLine.appendChild(line);
-        workflowArea.appendChild(temporaryLine);
+        workflowContent.appendChild(temporaryLine);
 
         event.preventDefault(); // Prevent text selection during drag
     } else {
-        // Calculate offset within the block
+        // Calculate offset within the block, accounting for zoom
         const rect = dragTarget.getBoundingClientRect();
-        dragTarget.offsetX = event.clientX - rect.left;
-        dragTarget.offsetY = event.clientY - rect.top;
+        const zoomFactor = getCurrentZoom();
+        
+        // Adjust offset for the current zoom level
+        dragTarget.offsetX = (event.clientX - rect.left) / zoomFactor;
+        dragTarget.offsetY = (event.clientY - rect.top) / zoomFactor;
     }
 }
 
 function doDrag(event) {
     const workflowArea = document.getElementById('workflow-area');
+    const workflowContent = workflowArea.querySelector('.workflow-content');
     if (!isDragging) return;
+    
+    // Get current zoom level
+    const zoomFactor = getCurrentZoom();
 
     if (isConnecting && temporaryLine) {
-        const workflowRect = workflowArea.getBoundingClientRect();
+        const workflowRect = workflowContent.getBoundingClientRect();
         
         // Get the handle that started the connection
         const handle = document.getElementById(connectStart.blockId).querySelector(`.handle.${connectStart.handleType}`);
         const handleRect = handle.getBoundingClientRect();
         
-        // Calculate handle center position relative to workflow area
-        const handleX = handleRect.left + handleRect.width/2 - workflowRect.left;
-        const handleY = handleRect.top + handleRect.height/2 - workflowRect.top;
+        // Calculate handle center position relative to workflow area, adjusted for zoom
+        const handleX = (handleRect.left - workflowRect.left) / zoomFactor + handleRect.width/(2*zoomFactor);
+        const handleY = (handleRect.top - workflowRect.top) / zoomFactor + handleRect.height/(2*zoomFactor);
         
-        // Calculate mouse position relative to workflow area
-        const mouseX = event.clientX - workflowRect.left;
-        const mouseY = event.clientY - workflowRect.top;
+        // Calculate mouse position relative to workflow area, adjusted for zoom
+        const mouseX = (event.clientX - workflowRect.left) / zoomFactor;
+        const mouseY = (event.clientY - workflowRect.top) / zoomFactor;
         
         // Determine which is the start point and which is the end point
-        // For left handles, the connection goes from mouse to handle
-        // For right handles, the connection goes from handle to mouse
         const x1 = connectStart.handleType === 'left' ? mouseX : handleX;
         const y1 = connectStart.handleType === 'left' ? mouseY : handleY;
         const x2 = connectStart.handleType === 'left' ? handleX : mouseX;
         const y2 = connectStart.handleType === 'left' ? handleY : mouseY;
         
         // Position and size the SVG element to contain the line
-        const minX = Math.min(x1, x2) - 5; // Add a small buffer
+        const minX = Math.min(x1, x2) - 5; 
         const minY = Math.min(y1, y2) - 5;
-        const width = Math.abs(x2 - x1) + 10; // Add padding for visibility
+        const width = Math.abs(x2 - x1) + 10; 
         const height = Math.abs(y2 - y1) + 10;
         
-        // Ensure SVG is always visible with reasonable minimum dimensions
-        const minDimension = 20; // Increased for better visibility
+        const minDimension = 20;
         const svgWidth = Math.max(width, minDimension);
         const svgHeight = Math.max(height, minDimension);
         
@@ -103,8 +110,11 @@ function doDrag(event) {
     } else {
         // Block dragging
         if (dragTarget) {
-            const x = event.clientX - workflowArea.offsetLeft - dragTarget.offsetX;
-            const y = event.clientY - workflowArea.offsetTop - dragTarget.offsetY;
+            // Adjust coordinates for zoom level
+            const contentRect = workflowContent.getBoundingClientRect();
+            const x = (event.clientX - contentRect.left) / zoomFactor - dragTarget.offsetX;
+            const y = (event.clientY - contentRect.top) / zoomFactor - dragTarget.offsetY;
+            
             dragTarget.style.left = `${x}px`;
             dragTarget.style.top = `${y}px`;
             updateConnections(workflowArea); // Update connections when dragging

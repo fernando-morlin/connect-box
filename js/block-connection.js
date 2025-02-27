@@ -1,11 +1,41 @@
 // js/block-connection.js
 import { createElement } from './utils.js';
+import { getCurrentZoom } from './zoom-handler.js'; // Import zoom functionality
 
 window.connections = []; // Keep connections in global scope
 
 function updateConnections(workflowArea) {
+    // Get the content container where all blocks are placed
+    const workflowContent = workflowArea.querySelector('.workflow-content') || workflowArea;
+    
     // Remove existing lines
-    document.querySelectorAll('.connection-line').forEach(line => line.remove());
+    workflowContent.querySelectorAll('.connection-line').forEach(line => {
+        if (!line.classList.contains('temporary-connection')) {
+            line.remove();
+        }
+    });
+
+    // Get or create the connections container and apply the same transform
+    let connectionsContainer = workflowContent.querySelector('.connections-container');
+    if (!connectionsContainer) {
+        connectionsContainer = document.createElement('div');
+        connectionsContainer.className = 'connections-container';
+        connectionsContainer.style.position = 'absolute';
+        connectionsContainer.style.top = '0';
+        connectionsContainer.style.left = '0';
+        connectionsContainer.style.width = '100%';
+        connectionsContainer.style.height = '100%';
+        connectionsContainer.style.pointerEvents = 'none';
+        connectionsContainer.style.zIndex = '1';
+        
+        // Important: Insert before any content so that it's affected by the same transform
+        workflowContent.insertBefore(connectionsContainer, workflowContent.firstChild);
+    }
+
+    connectionsContainer.innerHTML = '';
+    
+    // NEW: Important - make sure the container doesn't have its own transform
+    connectionsContainer.style.transform = 'none';
 
     window.connections.forEach(conn => {
         const sourceBlock = document.getElementById(conn.source);
@@ -17,47 +47,59 @@ function updateConnections(workflowArea) {
 
             if (!sourceHandle || !targetHandle) return;
 
-            // Get positions relative to workflow area
-            const workflowRect = workflowArea.getBoundingClientRect();
-            const sourceRect = sourceHandle.getBoundingClientRect();
-            const targetRect = targetHandle.getBoundingClientRect();
+            // NEW: Get positions using offsetLeft/offsetTop which are unaffected by transforms
+            // Calculate position relative to workflow content
+            let sourceX = 0, sourceY = 0;
+            let targetX = 0, targetY = 0;
+            
+            // Walk up the DOM to get accumulated offsets (without transform effects)
+            let element = sourceHandle;
+            while (element && element !== workflowContent) {
+                sourceX += element.offsetLeft;
+                sourceY += element.offsetTop;
+                element = element.offsetParent;
+            }
+            
+            element = targetHandle;
+            while (element && element !== workflowContent) {
+                targetX += element.offsetLeft;
+                targetY += element.offsetTop;
+                element = element.offsetParent;
+            }
+            
+            // Adjust for handle center
+            sourceX += sourceHandle.offsetWidth / 2;
+            sourceY += sourceHandle.offsetHeight / 2;
+            targetX += targetHandle.offsetWidth / 2;
+            targetY += targetHandle.offsetHeight / 2;
 
-            // Calculate positions
-            const x1 = sourceRect.left + sourceRect.width / 2 - workflowRect.left;
-            const y1 = sourceRect.top + sourceRect.height / 2 - workflowRect.top;
-            const x2 = targetRect.left + targetRect.width / 2 - workflowRect.left;
-            const y2 = targetRect.top + targetRect.height / 2 - workflowRect.top;
-
-            // Create SVG container with minimum dimensions
+            // Create SVG in the natural coordinates (before transform)
             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             svg.setAttribute("class", "connection-line");
             svg.style.position = "absolute";
             
-            // Set minimum dimensions for SVG (increased from 4px to 10px)
             const minDimension = 10;
-            const width = Math.max(Math.abs(x2 - x1), minDimension);
-            const height = Math.max(Math.abs(y2 - y1), minDimension);
+            const width = Math.max(Math.abs(targetX - sourceX), minDimension);
+            const height = Math.max(Math.abs(targetY - sourceY), minDimension);
             
-            // Adjust position to account for minimum dimensions
-            const left = Math.min(x1, x2) - (width === minDimension ? minDimension/2 : 0);
-            const top = Math.min(y1, y2) - (height === minDimension ? minDimension/2 : 0);
+            const left = Math.min(sourceX, targetX) - (width === minDimension ? minDimension/2 : 0);
+            const top = Math.min(sourceY, targetY) - (height === minDimension ? minDimension/2 : 0);
             
             svg.style.left = left + "px";
             svg.style.top = top + "px";
             svg.style.width = width + "px";
             svg.style.height = height + "px";
 
-            // Create line element
             const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", x1 < x2 ? 0 : Math.abs(x2 - x1));
-            line.setAttribute("y1", y1 < y2 ? 0 : Math.abs(y2 - y1));
-            line.setAttribute("x2", x1 < x2 ? Math.abs(x2 - x1) : 0);
-            line.setAttribute("y2", y1 < y2 ? Math.abs(y2 - y1) : 0);
+            line.setAttribute("x1", sourceX < targetX ? 0 : width);
+            line.setAttribute("y1", sourceY < targetY ? 0 : height);
+            line.setAttribute("x2", sourceX < targetX ? width : 0);
+            line.setAttribute("y2", sourceY < targetY ? height : 0);
             line.setAttribute("stroke", "#000");
             line.setAttribute("stroke-width", "4");
 
             svg.appendChild(line);
-            workflowArea.appendChild(svg);
+            connectionsContainer.appendChild(svg);
         }
     });
 }
