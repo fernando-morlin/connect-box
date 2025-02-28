@@ -724,3 +724,93 @@ option {
     transform-origin: top left;
     transition: transform 0.2s ease;
 }
+
+/* Add to css/styles.css */
+
+/* Execution status indicators */
+.execution-status {
+    background-color: #118ab2;
+    color: white;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0px #000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+/* Spinner animation */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Add visual indication for blocks being executed */
+.block.executing {
+    animation: executing-pulse 1.5s infinite alternate;
+    z-index: 10; /* Make executing blocks appear above others */
+}
+
+@keyframes executing-pulse {
+    from { box-shadow: 8px 8px 0px #000; }
+    to { box-shadow: 8px 8px 0px #06d6a0; }
+}
+
+/* Style for execute button when executing */
+.execute.executing, .play-button.executing {
+    background-color: #ef476f !important;
+    animation: button-pulse 1s infinite alternate;
+}
+
+@keyframes button-pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+/* Error message styling */
+.error {
+    background-color: #ef476f;
+    color: white;
+    padding: 10px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0px #000;
+    margin: 10px 0;
+}
+
+/* Add engineering theme support */
+body.engineering-theme .execution-status {
+    background-color: #1B3B4B;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .error {
+    background-color: #942911;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .block.executing {
+    animation: engineering-executing-pulse 1.5s infinite alternate;
+}
+
+@keyframes engineering-executing-pulse {
+    from { box-shadow: 5px 5px 0px rgba(27, 59, 75, 0.5); }
+    to { box-shadow: 5px 5px 0px #3A6F62; }
+}
+
+body.engineering-theme .execute.executing,
+body.engineering-theme .play-button.executing {
+    background-color: #3A6F62 !important;
+}
