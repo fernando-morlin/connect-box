@@ -1,0 +1,9 @@
+/* css/styles/base.css - Base styles */
+body {
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background-color: #f0f0f0;
+    transition: background-color 0.3s ease;
+}

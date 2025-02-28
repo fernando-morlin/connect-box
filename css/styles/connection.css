@@ -1,0 +1,47 @@
+/* css/styles/connection.css - Connection styles */
+.connection-line line {
+    stroke: #000;
+    stroke-width: 4;
+    stroke-linecap: square;
+}
+
+/* Fix play button positioning and styling to match delete button */
+.delete-button, .play-button {
+    position: absolute;
+    border: 3px solid #000;
+    border-radius: 0px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 3;
+    box-shadow: 3px 3px 0px #000;
+}
+
+.delete-button {
+    top: 5px;
+    right: 5px;
+    background-color: #ef476f;
+    color: white;
+}
+
+.play-button {
+    top: 5px;
+    right: 40px;
+    background-color: #118ab2;
+    color: white;
+}
+
+.delete-button:hover, .play-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 5px 5px 0px #000;
+}
+
+.delete-button:active, .play-button:active {
+    transform: translateY(2px);
+    box-shadow: 1px 1px 0px #000;
+}

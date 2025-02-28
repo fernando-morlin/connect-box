@@ -1,0 +1,47 @@
+/* css/styles/zoom.css - Zoom styles */
+/* Update zoom controls positioning */
+.zoom-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 3px solid #000;
+    padding: 8px;
+    box-shadow: 4px 4px 0px #000;
+    z-index: 1002; /* Set higher than execution results */
+}
+
+.zoom-btn {
+    background-color: #118ab2;
+    color: white;
+    border: 2px solid #000;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 2px 2px 0px #000;
+}
+
+.zoom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0px #000;
+}
+
+.zoom-btn:active {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 0px #000;
+}
+
+.zoom-level {
+    margin: 0 10px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    user-select: none;
+    min-width: 50px;
+    text-align: center;
+}

@@ -1,0 +1,110 @@
+/* css/styles/block.css - Block styles */
+.block {
+    position: absolute;
+    border: 4px solid #000;
+    background-color: white;
+    border-radius: 2px;
+    padding: 14px;
+    box-shadow: 8px 8px 0px #000;
+    min-width: 180px;
+    min-height: 120px;
+    z-index: 1;
+    user-select: none;
+    box-sizing: border-box;
+    transform: rotate(-0.5deg);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.text-block {
+    background-color: #ffd166; /* Yellow for text blocks */
+}
+
+.instruction-block {
+    background-color: #06d6a0; /* Green for instruction blocks */
+}
+
+.block textarea {
+    width: 100%;
+    resize: none;
+    border: 3px solid #000;
+    border-radius: 0px;
+    padding: 8px;
+    margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    box-sizing: border-box;
+    min-height: 70px;
+    height: calc(100% - 45px);
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.block-label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #000;
+    text-transform: uppercase;
+}
+
+/* Fixing the handle styles to make them square instead of diamond shaped */
+.handle {
+    width: 20px;
+    height: 20px;
+    border-radius: 0; /* Square instead of round */
+    position: absolute;
+    cursor: pointer;
+    z-index: 2;
+    border: 3px solid #000;
+    transform: none; /* Remove diamond rotation */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.handle.left {
+    left: -13px;
+    top: 50%;
+    transform: translateY(-50%); /* Only center vertically */
+    background-color: #ef476f; /* Bold color */
+}
+
+.handle.right {
+    right: -13px;
+    top: 50%;
+    transform: translateY(-50%); /* Only center vertically */
+    background-color: #118ab2; /* Bold color */
+}
+
+.handle:hover {
+    transform: translateY(-50%) scale(1.2); /* Remove rotation from hover state */
+}
+
+/* Add resize functionality with improved styling */
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white instead of black */
+    cursor: nwse-resize;
+    z-index: 3;
+    transition: background-color 0.2s ease; /* Simplified transition for just color */
+}
+
+/* Add hover state for the resize handle */
+.resize-handle:hover {
+    background-color: #ffffff; /* Pure white on hover */
+}
+
+/* Add active state for when the user is dragging */
+.resize-handle:active {
+    background-color: #118ab2; /* Same blue as the right handle for consistency */
+}
+
+/* Make the engineering theme keep its current behavior */
+body.engineering-theme .resize-handle {
+    background-color: #1B3B4B; /* Keep the dark color for engineering theme */
+}
+
+body.engineering-theme .resize-handle:hover {
+    background-color: #3A6F62; /* Keep the existing hover behavior */
+}

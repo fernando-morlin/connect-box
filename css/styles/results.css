@@ -1,0 +1,79 @@
+/* css/styles/results.css - Results styles */
+/* Update execution results positioning */
+#execution-results {
+    margin-top: 20px;
+    padding: 15px;
+    border: 4px solid #000;
+    background-color: white;
+    display: none;
+    box-shadow: 6px 6px 0px #000;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    position: fixed;
+    bottom: 100px; /* Increased to avoid overlap with zoom controls */
+    left: 120px;
+    right: 20px;
+    z-index: 1001; /* Above the workflow content */
+    transform: none !important; /* Ensure no transform is applied */
+    font-size: 14px; /* Reduced font size from default */
+    max-height: 250px; /* Slightly reduced height */
+    overflow-y: auto;
+}
+
+#execution-results.visible {
+    display: block;
+}
+
+#execution-results.hidden {
+    display: none !important; /* Added !important to override any other display settings */
+}
+
+/* Add this to the bottom of your css/styles.css file */
+.result-label {
+    background-color: #ffd166; /* Same yellow as text blocks */
+    padding: 2px 6px;
+    border: 3px solid #000;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 3px 3px 0px #000; /* Neo-brutalist shadow */
+    transform: rotate(-0.5deg); /* Slight tilt like blocks */
+    font-family: 'Courier New', monospace;
+}
+
+#execution-results p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+#results-toggle {
+    position: fixed;
+    bottom: 90px; /* Position above zoom controls (which is at bottom: 20px) */
+    right: 46px; /* Keep it aligned with the right edge */
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    padding: 8px 18px;
+    background-color: #118ab2;
+    color: white;
+    border: 3px solid #000;
+    border-radius: 2px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px #000;
+    transform: rotate(-0.5deg);
+    z-index: 1002; /* Same or higher than zoom controls */
+    transition: all 0.2s;
+}
+
+#results-toggle:hover {
+    transform: translateY(-2px) rotate(0.5deg);
+    box-shadow: 6px 6px 0px #000;
+}
+
+#results-toggle:active {
+    transform: translateY(2px) rotate(0deg);
+    box-shadow: 2px 2px 0px #000;
+}
+
+#execution-results.hidden {
+    display: none !important; /* Added !important to override any other display settings */
+}

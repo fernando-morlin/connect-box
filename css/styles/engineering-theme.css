@@ -1,3 +1,30 @@
+/* Add engineering theme support */
+body.engineering-theme .execution-status {
+    background-color: #1B3B4B;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .error {
+    background-color: #942911;
+    border: 2px solid #1B3B4B;
+    box-shadow: 3px 3px 0px rgba(27, 59, 75, 0.5);
+}
+
+body.engineering-theme .block.executing {
+    animation: engineering-executing-pulse 1.5s infinite alternate;
+}
+
+@keyframes engineering-executing-pulse {
+    from { box-shadow: 5px 5px 0px rgba(27, 59, 75, 0.5); }
+    to { box-shadow: 5px 5px 0px #3A6F62; }
+}
+
+body.engineering-theme .execute.executing,
+body.engineering-theme .play-button.executing {
+    background-color: #3A6F62 !important;
+}
+
 /* css/engineering-theme.css */
 
 /* Apply styles only when .engineering-theme class is on body */

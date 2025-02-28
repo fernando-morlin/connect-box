@@ -1,0 +1,29 @@
+/* css/styles/workflow.css - Workflow area styles */
+#workflow-area {
+    flex: 1;
+    padding: 20px;
+    background-color: #f8f9fa;
+    background-image: 
+        linear-gradient(#ddd 1px, transparent 1px),
+        linear-gradient(90deg, #ddd 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+    overflow: auto;
+    cursor: default;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#workflow-area.panning {
+    cursor: grabbing;
+}
+
+/* Add a wrapper for the workflow content to handle zoom */
+.workflow-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: top left;
+    transition: transform 0.2s ease;
+}
