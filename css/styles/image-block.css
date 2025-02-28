@@ -53,6 +53,13 @@
     margin-top: 10px;
     display: block;
     box-sizing: border-box;
+    z-index: 3; /* Add this to make it display over handles (which have z-index: 2) */
+    position: relative; /* Add this to create a stacking context */
+}
+
+/* Make resize handle stay behind image preview */
+.image-block .resize-handle {
+    z-index: 2; /* Lower than image-preview's z-index of 3 */
 }
 
 /* Container for image */
