@@ -3,7 +3,7 @@ import { createElement } from './utils.js';
 import { createBlock } from './block-creation.js';
 import { startDrag, doDrag, endDrag } from './block-dragging.js';
 import { updateConnections, deleteBlock } from './block-connection.js';
-import { initializeSettings } from './settings-handler.js';
+import { initializeSettings, saveSettings } from './settings-handler.js';
 import { executeWorkflow, executeFromBlock } from './execution.js';
 import { initializeZoom, loadSavedZoom } from './zoom-handler.js'; // Import zoom functionality
 
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     executeBtn.addEventListener('click', () => {
-        executeWorkflow(workflowArea); // Corrected function call
+        executeWorkflow(workflowArea);
     });
 
     if (resultsToggle && executionResults) {
